@@ -1,0 +1,10 @@
+{
+    "name": "gokiiw",
+    "host": "154.38.162.192",
+    "protocol": "ftp",
+    "port": 21,
+    "username": "gokiiw.net_52f0jcn8jjt",
+    "password": "admin@123#",
+    "remotePath": "/httpdocs",
+    "uploadOnSave": true
+}
