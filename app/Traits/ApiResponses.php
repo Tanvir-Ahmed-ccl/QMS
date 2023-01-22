@@ -8,9 +8,9 @@ Trait ApiResponses{
     {
         return response()
                 ->json([
-                    "status"    =>  $code,
+                    "status_code"    =>  $code,
                     "message"   =>  $message,
-                    "successMessage"  =>  $successMessage,
+                    "status"    =>  $successMessage,
                     "data"      =>  $data
                 ], $code);
     }
@@ -19,9 +19,9 @@ Trait ApiResponses{
     {
         return response()
                 ->json([
-                    "status"    =>  $code,
+                    "status_code"    =>  $code,
                     "message"   =>  $message,
-                    "error"     =>  $error,
+                    "status"    =>  $error,
                     "data"      =>  $data
                 ], $code);
     }

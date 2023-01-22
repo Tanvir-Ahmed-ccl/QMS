@@ -57,7 +57,6 @@ function sendOtpToPhone(int $userId)
     $otp = rand(100000, 999999);
 
     $user = \App\Models\User::find($userId);
-
     $user->otp = $otp;
     $user->save();
 

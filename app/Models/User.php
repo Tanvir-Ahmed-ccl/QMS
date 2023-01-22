@@ -12,7 +12,7 @@ class User extends Authenticatable
 {
 	use HasApiTokens, Notifiable;
 
-	protected $fillable = ['firstname', 'lastname', 'email',  'password', 'department_id', 'mobile', 'photo', 'user_type', 'user_role_id', 'remember_token', 'status', 'subscription_plan', 'subscribe_at', 'subscribe_out', 'token', 'qrcode', 'otp', 'avg_token_completed_time'];
+	protected $fillable = ['company_id', 'firstname', 'lastname', 'email',  'password', 'department_id', 'mobile', 'photo', 'user_type', 'user_role_id', 'remember_token', 'status', 'subscription_plan', 'subscribe_at', 'subscribe_out', 'token', 'qrcode', 'otp', 'avg_token_completed_time'];
 	
     protected $hidden = ['password', 'remember_token', 'token', 'otp'];
 

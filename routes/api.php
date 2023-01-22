@@ -22,6 +22,8 @@ Route::namespace("Api\Auth")
 ->group(function(){
 
     Route::post("login", "AuthController@login");
+    Route::post("signup", "AuthController@register");
+    Route::post("check-otp", "AuthController@checkOtpAndLogin");
 
 });
 
