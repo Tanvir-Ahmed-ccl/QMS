@@ -10,11 +10,11 @@
             <li class="col-xs-10 p-0 text-left">
                 <h3>{{ trans('app.department_list') }}</h3>
             </li>             
-            <li class="col-xs-2 p-0 text-right">
+            {{-- <li class="col-xs-2 p-0 text-right">
                 <button type="button" class="btn btn-warning btn-sm" data-toggle="modal" data-target="#infoModal">
                   <i class="fa fa-info-circle"></i>
                 </button>
-            </li> 
+            </li>  --}}
         </ul>
     </div>
 
@@ -30,7 +30,9 @@
                         <th>{{ trans('app.created_at') }}</th>
                         <th>{{ trans('app.updated_at') }}</th>
                         <th>{{ trans('app.status') }}</th>
+                        @if(issetAccess(auth()->user()->user_role_id)->location['write'])
                         <th width="80"><i class="fa fa-cogs"></i></th>
+                        @endif
                     </tr>
                 </thead> 
                 <tbody>
@@ -46,12 +48,14 @@
                                 <td>{{ (!empty($department->created_at)?date('j M Y h:i a',strtotime($department->created_at)):null) }}</td>
                                 <td>{{ (!empty($department->updated_at)?date('j M Y h:i a',strtotime($department->updated_at)):null) }}</td>
                                 <td>{!! (($department->status==1)?"<span class='label label-success'>". trans('app.active') ."</span>":"<span class='label label-danger'>". trans('app.deactive') ."</span>") !!}</td>
+                                @if(issetAccess(auth()->user()->user_role_id)->location['write'])
                                 <td>
                                     <div class="btn-group"> 
-                                        <a href="{{ url("admin/department/edit/$department->id") }}" class="btn btn-success btn-sm"><i class="fa fa-edit"></i></a>
-                                        <a href="{{ url("admin/department/delete/$department->id") }}" class="btn btn-danger btn-sm" onclick="return confirm('{{ trans("app.are_you_sure") }}')"><i class="fa fa-times"></i></a>
+                                        <a href="{{ url("admin/location/edit/$department->id") }}" class="btn btn-success btn-sm"><i class="fa fa-edit"></i></a>
+                                        <a href="{{ url("admin/location/delete/$department->id") }}" class="btn btn-danger btn-sm" onclick="return confirm('{{ trans("app.are_you_sure") }}')"><i class="fa fa-times"></i></a>
                                     </div>
                                 </td>
+                                @endif
                             </tr> 
                         @endforeach
                     @endif

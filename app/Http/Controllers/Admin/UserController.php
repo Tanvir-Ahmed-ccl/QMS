@@ -9,11 +9,17 @@ use App\Models\User;
 use App\Models\Token;
 use App\Models\Department; 
 use DB, Hash, Image, Validator;
+use Illuminate\Support\Facades\Auth;
 
 class UserController extends Controller
 { 
 	public function index()
 	{   
+        if(issetAccess(Auth::user()->user_role_id)->users['read'] == false) // Unless the user has access
+        {
+            return redirect('login')->with('exception',trans('app.you_are_not_authorized'));
+        }
+
         $departments = Department::where('status', 1)
             ->where('company_id', auth()->user()->company_id)
             ->pluck('name', 'id');
@@ -105,28 +111,49 @@ class UserController extends Controller
             $loop = 1;
             foreach ($users as $user)
             {  
-                $data[] = [
-                    'serial'     => $loop++,
-                    'photo'      => '<img src="'.asset((!empty($user->photo)?$user->photo:'public/assets/img/icons/no_user.jpg')).'" alt="" width="64">',
-                    'user_type'  => $user->userRole->name ?? 'Not Defined',
-                    'name'       => $user->firstname. ' ' . $user->lastname,
-                    'email'      => $user->email,
-                    'department' => (!empty($user->department)?$user->department->name:null),
-                    'mobile'     => $user->mobile,
-                    'created_at' => (!empty($user->created_at)?date('j M Y h:i a',strtotime($user->created_at)):null),
-                    'updated_at' => (!empty($user->updated_at)?date('j M Y h:i a',strtotime($user->updated_at)):null),
+                if((issetAccess(auth()->user()->user_role_id)->users['write']))
+                {
+                    $data[] = [
+                        'serial'     => $loop++,
+                        'photo'      => '<img src="'.asset((!empty($user->photo)?$user->photo:'public/assets/img/icons/no_user.jpg')).'" alt="" width="64">',
+                        'user_type'  => $user->userRole->name ?? 'Not Defined',
+                        'name'       => $user->firstname. ' ' . $user->lastname,
+                        'email'      => $user->email,
+                        'department' => (!empty($user->department)?$user->department->name:null),
+                        'mobile'     => $user->mobile,
+                        'created_at' => (!empty($user->created_at)?date('j M Y h:i a',strtotime($user->created_at)):null),
+                        'updated_at' => (!empty($user->updated_at)?date('j M Y h:i a',strtotime($user->updated_at)):null),
 
-                    'status'     => (($user->status==1)?"<span class='label label-success'>".trans('app.active')."</span>":"<span class='label label-danger'>".trans('app.deactive')."</span>"),
+                        'status'     => (($user->status==1)?"<span class='label label-success'>".trans('app.active')."</span>":"<span class='label label-danger'>".trans('app.deactive')."</span>"),
 
-                    'options'    => "<div class=\"btn-group\">
-                        <a href='".url("admin/user/view/$user->id")."' class=\"btn btn-sm btn-info\"><i class=\"fa fa-eye\"></i></a>". 
-                        (
-                            ($user->user_type != 5)?
-                            "<a href='".url("admin/user/edit/$user->id")."' class=\"btn btn-sm btn-success\"><i class=\"fa fa-edit\"></i></a>
-                            <a href='".url("admin/user/delete/$user->id")."' onclick=\"return confirm('".trans('app.are_you_sure')."')\" class=\"btn btn-sm btn-danger\"><i class=\"fa fa-times\"></i></a>":""
-                        ).
-                        "</div>" 
-                ];  
+                        
+                        'options'    => "<div class=\"btn-group\">
+                            <a href='".url("admin/user/view/$user->id")."' class=\"btn btn-sm btn-info\"><i class=\"fa fa-eye\"></i></a>". 
+                            (
+                                ($user->user_type != 5)?
+                                "<a href='".url("admin/user/edit/$user->id")."' class=\"btn btn-sm btn-success\"><i class=\"fa fa-edit\"></i></a>
+                                <a href='".url("admin/user/delete/$user->id")."' onclick=\"return confirm('".trans('app.are_you_sure')."')\" class=\"btn btn-sm btn-danger\"><i class=\"fa fa-times\"></i></a>":""
+                            ).
+                            "</div>"
+                    ];
+                }
+                else
+                {
+                    $data[] = [
+                        'serial'     => $loop++,
+                        'photo'      => '<img src="'.asset((!empty($user->photo)?$user->photo:'public/assets/img/icons/no_user.jpg')).'" alt="" width="64">',
+                        'user_type'  => $user->userRole->name ?? 'Not Defined',
+                        'name'       => $user->firstname. ' ' . $user->lastname,
+                        'email'      => $user->email,
+                        'department' => (!empty($user->department)?$user->department->name:null),
+                        'mobile'     => $user->mobile,
+                        'created_at' => (!empty($user->created_at)?date('j M Y h:i a',strtotime($user->created_at)):null),
+                        'updated_at' => (!empty($user->updated_at)?date('j M Y h:i a',strtotime($user->updated_at)):null),
+
+                        'status'     => (($user->status==1)?"<span class='label label-success'>".trans('app.active')."</span>":"<span class='label label-danger'>".trans('app.deactive')."</span>"),
+                    ];
+                }
+
             }
         }
             
@@ -141,6 +168,11 @@ class UserController extends Controller
 
     public function showForm()
     {
+        if(issetAccess(Auth::user()->user_role_id)->users['write'] == false) // Unless the user has access
+        {
+            return redirect('login')->with('exception',trans('app.you_are_not_authorized'));
+        }
+
         $departmentList = Department::where('company_id', auth()->user()->company_id)
             ->where('status', 1)
             ->pluck('name','id'); 
@@ -150,6 +182,11 @@ class UserController extends Controller
  
     public function create(Request $request)
     { 
+        if(issetAccess(Auth::user()->user_role_id)->users['write'] == false) // Unless the user has access
+        {
+            return redirect('login')->with('exception',trans('app.you_are_not_authorized'));
+        }
+
         @date_default_timezone_set(session('app.timezone'));
         
         $validator = Validator::make($request->all(), [ 
@@ -226,6 +263,11 @@ class UserController extends Controller
 
     public function view($id = null)
     {
+        if(issetAccess(Auth::user()->user_role_id)->users['read'] == false) // Unless the user has access
+        {
+            return redirect('login')->with('exception',trans('app.you_are_not_authorized'));
+        }
+
         $user = User::select(
                 'user.*', 
                 'department.name as department'
@@ -262,6 +304,11 @@ class UserController extends Controller
  
     public function showEditForm($id = null)
     {
+        if(issetAccess(Auth::user()->user_role_id)->users['write'] == false) // Unless the user has access
+        {
+            return redirect('login')->with('exception',trans('app.you_are_not_authorized'));
+        }
+
         $user = User::where('id', $id)
             ->whereNotIn('user_type', [5])
             ->first(); 
@@ -275,6 +322,11 @@ class UserController extends Controller
 
     public function update(Request $request)
     {  
+        if(issetAccess(Auth::user()->user_role_id)->users['write'] == false) // Unless the user has access
+        {
+            return redirect('login')->with('exception',trans('app.you_are_not_authorized'));
+        }
+
         @date_default_timezone_set(session('app.timezone'));
 
         // return $request->all();
@@ -356,9 +408,16 @@ class UserController extends Controller
     
     public function delete($id = null)
     {
+        if(issetAccess(Auth::user()->user_role_id)->users['write'] == false) // Unless the user has access
+        {
+            return redirect('login')->with('exception',trans('app.you_are_not_authorized'));
+        }
+
         $delete = User::where('id', $id)
             ->whereNotIn('user_type', [5])
             ->delete();
+
+        DB::table('token_setting')->where('user_id', $id)->delete();
 
         if ($delete) {
             return back()

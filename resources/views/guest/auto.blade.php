@@ -51,15 +51,28 @@
         <h4 class="modal-title">{{ trans('app.user_information') }}</h4>
       </div>
       <div class="modal-body">
-        <div id="section">
+        <div id="section"></div>
 
-        </div>
-        <p>
-            <input name="client_mobile" type="tel" id="mobile" class="form-control" placeholder="{{ trans('app.client_mobile') }}" required>
+        <div class="form-group mb-3">
+            <input name="client_mobile" type="tel" id="mobile" class="form-control" value="+" placeholder="{{ trans('app.client_mobile') }}" required>
+            <button onclick="sendOtp()" class="btn btn-sm btn-primary">Send OTP</button>
             <span class="text-danger">The Mobile No. field is required!</span>
-        </p>
+        </div>
+
         <p>
-            <input type="text" name="note" class="form-control" placeholder="Your Full Name" required/>
+            <input name="otp" type="number" id="otp" class="form-control" placeholder="Enter OTP Here" required>
+            <span  id="otp-alert-msg">Please enter mobile number first</span>
+        </p>
+
+        <p>
+            <input 
+                type="text"
+                name="note"
+                class="form-control"
+                placeholder="Your Full Name"
+                onkeydown="return /[a-z]/i/s*.test(event.key)"
+                required
+            />
             <span class="text-danger">The Name field is required!</span>
         </p>
         <p>
@@ -67,7 +80,14 @@
             <span class="text-muted">The Note field is optional!</span>
         </p>
 
-        <div class="row">
+        <div class="form-check">
+            <input class="form-check-input" style="margin-right: 10px" type="checkbox" name="agree" value="1" id="defaultCheck1" required>
+            <label class="form-check-label" for="defaultCheck1">
+                I agree with the terms and conditions
+            </label>
+        </div>
+
+        {{-- <div class="row">
             <label for="password" class="col-md-4 control-label">Captcha</label>
 
             <div class="col-md-6">
@@ -84,7 +104,7 @@
                     </span>
                 @endif
             </div>
-        </div>
+        </div> --}}
 
         <input type="hidden" name="department_id">
         <input type="hidden" name="counter_id">
@@ -103,6 +123,36 @@
 
 @push("scripts")
 <script>
+
+    function sendOtp()
+    {
+        var phone = $("#mobile").val();
+
+        $.ajax({
+            url: "{{ route('guest.send.otp') }}",
+            type: 'get',
+            data:{
+                phone: phone,
+            },
+            beforeSend: () => {
+                $("#otp-alert-msg").html("<span class=\"text-success\">Processing to send OTP to your phone ...</span>");
+            },
+            success: (res) => {
+                // console.log(res);
+                if(res.success == 1)
+                {
+                    $("#mobile").attr('readonly','readonly');
+                    $("#otp-alert-msg").text("Please check your phone number and enter the OTP here");
+                }
+                else
+                {
+                    $("#mobile").val(res.phone);
+                    $("#otp-alert-msg").text("something went wrong.");
+                }
+            }
+        })
+    }
+
 
     function loadRelatedSection(deptId, companyId)
     {
@@ -127,17 +177,6 @@
         })
     }
 
-    function recaptcha()
-    {
-        $.ajax({
-            url: "{{ route('refresh_captcha') }}",
-            type: 'GET',
-            success: (res) => {
-                // console.log(res);
-                $("#recaptcha").html(res.captcha);
-            }
-        })
-    }
 </script>
 
 <script type="text/javascript">
@@ -150,7 +189,7 @@
         $('input[name=counter_id]').val(button.data('counter-id'));
         $('input[name=user_id]').val(button.data('user-id'));
 
-        $("input[name=client_mobile]").val("+233");
+        // $("input[name=client_mobile]").val("+");
         $("textarea[name=note]").val("");
         $('.modal button[type=submit]').addClass('hidden');
     });
@@ -314,6 +353,7 @@
                 }
                 else
                 {
+                    $("input[name=client_mobile]").val(data.phone);
                     alert(data.exception);
                 }
             },

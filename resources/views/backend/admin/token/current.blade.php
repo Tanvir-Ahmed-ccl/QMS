@@ -29,6 +29,10 @@
                     <th>{{ trans('app.created_by') }}</th>
                     <th>{{ trans('app.created_at') }}</th>
                     <th width="120">{{ trans('app.action') }}</th>
+                    
+                    {{-- @if(issetAccess(auth()->user()->user_role_id)->token['active_token']['write'])
+                    <th width="120">{{ trans('app.action') }}</th>
+                    @endif --}}
                 </tr>
             </thead> 
             <tbody>
@@ -66,6 +70,8 @@
                             </td>
                             <td>{!! (!empty($token->generated_by)?("<a href='".url("admin/user/view/{$token->generated_by->id}")."'>".$token->generated_by->firstname." ". $token->generated_by->lastname."</a>"):null) !!}</td> 
                             <td>{{ (!empty($token->created_at)?date('j M Y h:i a',strtotime($token->created_at)):null) }}</td>
+                            
+                            {{-- @if(issetAccess(auth()->user()->user_role_id)->token['active_token']['write']) --}}
                             <td>
                                 <div class="btn-group"> 
                                     <a href="{{ url("admin/token/complete/$token->id") }}"  class="btn btn-success btn-sm" onclick="return confirm('Are you sure?')" title="Complete"><i class="fa fa-check"></i></a>
@@ -78,6 +84,7 @@
                                     <a href='{{ url("admin/token/delete/$token->id") }}'class="btn btn-danger btn-sm" onclick="return confirm('Are you sure?');" title="Delete"><i class="fa fa-times"></i></a>
                                 </div>
                             </td>
+                            {{-- @endif --}}
                         </tr> 
                     @endforeach
                 @endif

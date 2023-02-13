@@ -4,11 +4,18 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use DB;
+use Illuminate\Support\Facades\Auth;
 
 class HomeController extends Controller
 {
     public function home()
     { 
+        if(Auth::user()->user_type !== 5) // if user is not admin
+        {
+            return redirect(url('officer'));
+        }
+
+
         @date_default_timezone_set(session('app.timezone'));
         
         $infobox = $this->infobox();

@@ -31,6 +31,9 @@ Route::namespace("Api\Auth")
 
 /** ---------   Protected Api
  * ============================================*/
-Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
-    return $request->user();
+Route::prefix('{userId}')
+->group(function(){
+
+    Route::get('home', 'Api\HomeController@index');
+
 });

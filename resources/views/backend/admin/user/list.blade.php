@@ -71,7 +71,7 @@
                     <th>{{ trans('app.status') }}</th>  
                     <th>{{ trans('app.created_at') }}</th> 
                     <th>{{ trans('app.updated_at') }}</th>  
-                    <th width="80"><i class="fa fa-cogs"></i></th> 
+                    <th width="80"><i class="fa fa-cogs"></i></th>
                 </tr>
             </thead>  
         </table>
@@ -142,8 +142,10 @@
                 { data: 'mobile' },
                 { data: 'status' },
                 { data: 'created_at' }, 
-                { data: 'updated_at' }, 
-                { data: 'options' }  
+                { data: 'updated_at' }
+                @if(issetAccess(auth()->user()->user_role_id)->users['write'])
+                ,{ data: 'options' }
+                @endif
             ],
             order: [ [0, 'desc'] ], 
             select    : true,
@@ -155,7 +157,7 @@
             ], 
             buttons: [
                 { extend:'copy', text:'<i class="fa fa-copy"></i>', className:'btn-sm',exportOptions:{columns:':visible'}},
-                { extend: 'print', text  :'<i class="fa fa-print"></i>', className:'btn-sm', exportOptions: { columns: ':visible',  modifier: { selected: null } }},  
+                { extend: 'print', text:'<i class="fa fa-print"></i>', className:'btn-sm', exportOptions: { columns: ':visible',  modifier: { selected: null } }},  
                 { extend: 'print',className:'btn-sm', text:'<i class="fa fa-print"></i>  Selected',exportOptions:{columns: ':visible'}},  
                 { extend:'excel',  text:'<i class="fa fa-file-excel-o"></i>', className:'btn-sm',exportOptions:{columns:':visible'}},
                 { extend:'pdf',  text:'<i class="fa fa-file-pdf-o"></i>',  className:'btn-sm',exportOptions:{columns:':visible'}},

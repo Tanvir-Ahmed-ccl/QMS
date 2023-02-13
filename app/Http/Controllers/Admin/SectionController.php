@@ -8,24 +8,40 @@ use App\Models\Counter;
 use App\Models\Department;
 use App\Models\Section;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Validator, App;
 
 class SectionController extends Controller
 {
 	public function index()
 	{   
+        if(issetAccess(Auth::user()->user_role_id)->section['read'] == false) // Unless the user has access
+        {
+            return redirect('login')->with('exception',trans('app.you_are_not_authorized'));
+        }
+
         $sections = Section::with('department')->where('company_id', auth()->user()->company_id)->get();
     	return view('backend.admin.section.list', ['sections' => $sections]);
 	}
 
     public function showForm()
     {
+        if(issetAccess(Auth::user()->user_role_id)->section['write'] == false) // Unless the user has access
+        {
+            return redirect('login')->with('exception',trans('app.you_are_not_authorized'));
+        }
+
         $departments = Department::where('company_id', auth()->user()->company_id)->get(['id','name']);
     	return view('backend.admin.section.form', compact('departments'));
     }
     
     public function create(Request $request)
     {     
+        if(issetAccess(Auth::user()->user_role_id)->section['write'] == false) // Unless the user has access
+        {
+            return redirect('login')->with('exception',trans('app.you_are_not_authorized'));
+        }
+
         @date_default_timezone_set(session('app.timezone'));
         
         $validator = Validator::make($request->all(), [ 
@@ -73,12 +89,22 @@ class SectionController extends Controller
  
     public function showEditForm($id = null)
     {
+        if(issetAccess(Auth::user()->user_role_id)->section['write'] == false) // Unless the user has access
+        {
+            return redirect('login')->with('exception',trans('app.you_are_not_authorized'));
+        }
+
         $section = Section::find($id);
-        return view('backend.admin.counter.edit', compact('section'));
+        return view('backend.admin.section.edit', compact('section'));
     }
   
     public function update(Request $request)
     { 
+        if(issetAccess(Auth::user()->user_role_id)->section['write'] == false) // Unless the user has access
+        {
+            return redirect('login')->with('exception',trans('app.you_are_not_authorized'));
+        }
+
         @date_default_timezone_set(session('app.timezone')); 
 
         $validator = Validator::make($request->all(), [ 
@@ -100,7 +126,7 @@ class SectionController extends Controller
 
             if(Section::where(['company_id' => $companyId, 'name' => $request->name])->exists())
             {
-                return redirect('admin/department/create')
+                return redirect('admin/section/create')
                 ->withErrors(['name' => 'Section is already exists'])
                 ->withInput();
             }
@@ -124,8 +150,14 @@ class SectionController extends Controller
  
     public function delete($id = null)
     {
+        if(issetAccess(Auth::user()->user_role_id)->section['write'] == false) // Unless the user has access
+        {
+            return redirect('login')->with('exception',trans('app.you_are_not_authorized'));
+        }
+
         $delete = Section::where('id', $id)
             ->delete();
+        DB::table('token_setting')->where('section_id', $id)->delete();
         return redirect('admin/section')->with('message', trans('app.delete_successfully'));
     }  
 

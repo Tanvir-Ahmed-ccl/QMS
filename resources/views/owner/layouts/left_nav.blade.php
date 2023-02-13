@@ -44,6 +44,11 @@
                         <i class="menu-icon fa fa-cog"></i>Settings
                     </a>
                 </li>
+                <li class="{{ (request()->segment(2) == 'slider') ? 'active' : '' }}">
+                    <a href="{{ route('slider.index') }}">
+                        <i class="menu-icon fa fa-cog"></i>Sliders
+                    </a>
+                </li>
                 {{-- <li class="{{ (request()->segment(2) == 'about') ? 'active' : '' }}">
                     <a href="{{ route('owner.app.about') }}">
                         <i class="menu-icon fa fa-building-o"></i>About

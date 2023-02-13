@@ -76,4 +76,80 @@ function checkMobileOtp(int $inputOtp, int $userId){
     }
     return false;
 }
+
+
+function userAccessList()
+{
+    return [
+        "location" => [
+            "read"  =>  1,
+            "write"  => 1,
+        ],
+        "section" => [
+            "read"  =>  1,
+            "write"  => 1,
+        ],
+        "counter" => [
+            "read"  =>  1,
+            "write"  => 1,
+        ],
+        "user_type" => [
+            "read"  =>  1,
+            "write"  => 1,
+        ],
+        "users" => [
+            "read"  =>  1,
+            "write"  => 1,
+        ],
+        "sms" => [
+            "read"  =>  1,
+            "write"  => 1,
+        ],
+        "token" => [
+            "auto_token"    => 1,
+            "manual_token"    => 1,
+            "performance_report"    => 1,
+            "auto_token_setting"    => 1,
+            "active_token"    => [
+                'own_token' =>  1,
+                'all_token' =>  1,
+                // 'read'  =>  1,
+                // 'write' =>  1
+            ],
+            "token_report"    => [
+                'read'  =>  1,
+                'write' =>  1
+            ],
+            
+        ],
+        "display"   =>  1,
+        "message"   =>  1,
+        "setting"   =>  [
+            'app_setting'   =>  1,
+            'subsription'   =>  1,
+            'display_setting'   =>  1,
+            'profile_information'   =>  1,
+        ]
+    ];
+}
+
+
+function issetAccess($roleId)
+{
+    if(is_null($roleId))
+    {
+        return (object)userAccessList();
+    }
+    else
+    {
+        $userRole = \App\Models\UserType::find($roleId);
+
+        if(!is_null($userRole->roles))
+        $roles = (object)json_decode($userRole->roles, true);
+        else
+        $roles = (object)userAccessList();
+
+        return $roles;
+    }
+}
 ?>

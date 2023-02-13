@@ -9,6 +9,8 @@ class Token extends Model
     protected $table = "token";
     public $timestamps = false;
     
+    
+
     public function department() 
     {
         return $this->hasOne('App\Models\Department', 'id', 'department_id');

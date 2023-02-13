@@ -174,7 +174,7 @@ class TokenController extends Controller
     {  
         @date_default_timezone_set(session('app.timezone'));
         $tokens = Token::where('status', '0')
-            ->where('user_id', auth()->user()->id )
+            ->where('user_id', auth()->user()->id)
             ->orderBy('is_vip', 'DESC')
             ->orderBy('id', 'ASC')
             ->get(); 

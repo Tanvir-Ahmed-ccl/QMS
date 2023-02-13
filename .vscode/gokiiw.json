@@ -6,5 +6,5 @@
     "username": "gokiiw.net_52f0jcn8jjt",
     "password": "admin@123#",
     "remotePath": "/httpdocs",
-    "uploadOnSave": true
+    "uploadOnSave": false
 }
