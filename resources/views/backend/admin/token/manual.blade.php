@@ -198,7 +198,7 @@
             // ipinfoToken: "yolo",
             nationalMode: false,
             numberType: "MOBILE",
-            // preferredCountries: ['gh', 'us'],
+            preferredCountries: [],
             preventInvalidNumbers: true,
         });
     });
