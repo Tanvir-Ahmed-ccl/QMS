@@ -34,27 +34,60 @@
             @if($display->sms_alert)
             <div class="form-group @error('client_mobile') has-error @enderror">
                 <label for="client_mobile">{{ trans('app.client_mobile') }} <i class="text-danger">*</i></label><br/>
-                <input type="tel" id="mobile" name="client_mobile" class="form-control" placeholder="{{ trans('app.client_mobile') }}"/>  
+                <input type="tel" value="+" id="mobile" name="client_mobile" class="form-control" placeholder="{{ trans('app.client_mobile') }}"/>  
                 <span class="text-danger">{{ $errors->first('client_mobile') }}</span>
-            </div>   
+                <button class="btn-sm btn-primary" onclick="sendOTP(event)">Send OTP</button>
+            </div>  
+            
+            <div class="form-group @error('otp') has-error @enderror" id="otp-input">
+                
+            </div>  
+            
             @endif
 
+            {{-- Location --}}
             <div class="form-group @error('department_id') has-error @enderror">
                 <label for="department_id">{{ trans('app.department') }} <i class="text-danger">*</i></label><br/>
-                {{ Form::select('department_id', $departments, null, ['placeholder' => 'Select Option', 'class'=>'select2 form-control']) }}<br/>
+                <select name="department_id" class="form-control"
+                    onchange="loadSection(this.value)"
+                >
+                    <option value="">Select One</option>
+                    @foreach ($departments as $key => $item)
+                    <option value="{{$key}}">{{$item}}</option>
+                    @endforeach
+                </select>
                 <span class="text-danger">{{ $errors->first('department_id') }}</span>
             </div> 
 
-            <div class="form-group @error('counter_id') has-error @enderror">
-                <label for="user">{{ trans('app.counter') }} <i class="text-danger">*</i></label><br/>
-                {{ Form::select('counter_id', $counters, null, ['placeholder' => 'Select Option', 'class'=>'select2 form-control']) }}<br/>
-                <span class="text-danger">{{ $errors->first('counter_id') }}</span>
+            {{-- service --}}
+            <div class="form-group @error('section_id') has-error @enderror" id="ajax-section">
+                <label for="section_id">Service <i class="text-danger">*</i></label><br/>
+                <select name="section_id" class="form-control">
+                    <option value="">Select One</option>
+                </select>
             </div> 
 
-            <div class="form-group @error('user_id') has-error @enderror">
-                <label for="user">{{ trans('app.officer') }} <i class="text-danger">*</i></label><br/>
+            <div class="form-group @error('counter_id') has-error @enderror" id="ajax-counter">
+                
+                <label for="">{{ trans('app.counter') }}</label>
+                <select name="" id="">
+                    <option value="">Select One</option>
+                </select>
+
+                {{-- <label for="user">{{ trans('app.counter') }} <i class="text-danger">*</i></label><br/>
+                {{ Form::select('counter_id', $counters, null, ['placeholder' => 'Select Option', 'class'=>'select2 form-control']) }}<br/>
+                <span class="text-danger">{{ $errors->first('counter_id') }}</span> --}}
+            </div> 
+
+            <div class="form-group @error('user_id') has-error @enderror" id="ajax-user">
+
+                <label for="">{{ trans('app.officer') }}</label>
+                <select name="" id="">
+                    <option value="">Select One</option>
+                </select>
+                {{-- <label for="user">{{ trans('app.officer') }} <i class="text-danger">*</i></label><br/>
                 {{ Form::select('user_id', $officers, null, ['placeholder' => 'Select Option', 'class'=>'select2 form-control']) }}<br/>
-                <span class="text-danger">{{ $errors->first('user_id') }}</span>
+                <span class="text-danger">{{ $errors->first('user_id') }}</span> --}}
             </div>  
 
             @if($display->show_note)
@@ -110,6 +143,74 @@
 @push('scripts')
 <script src="{{ asset('intelInput/jquery.min.js') }}"></script>
 <script src="{{ asset('intelInput/script.min.js') }}"></script>
+
+<script>
+
+    function sendOTP(e)
+    {
+        e.preventDefault();
+        let phone = $("#mobile").val();
+    
+        $.ajax({
+            url:"{{route('ajax.send.otp')}}",
+            type: "GET",
+            data:{
+                phone:phone
+            },
+            success: function(res){
+                $("#mobile").attr('readonly','readonly');
+                $("#otp-input").html('<label for="">Please check the phone and enter the OTP</label><input type="number" name="otp" class="form-control" />');
+            }
+        })
+    }
+
+
+    function loadCounter(key)
+    {
+        $.ajax({
+            url:"{{route('ajax.load.counter')}}",
+            type: "GET",
+            data:{
+                locationId:key
+            },
+            success: function(res){
+                $("#ajax-counter").html(res);
+            }
+        })
+    }
+
+
+    function loadSection(key)
+    {
+        $.ajax({
+            url:"{{route('ajax.load.section')}}",
+            type: "GET",
+            data:{
+                key:key
+            },
+            success: function(res){
+                $("#ajax-section").html(res);
+            }
+        })
+    }
+
+
+    function loadUser(key)
+    { 
+        // alert(key);
+        $.ajax({
+            url:"{{route('ajax.load.user')}}",
+            type: "GET",
+            data:{
+                counterId:key
+            },
+            success: function(res){
+                $("#ajax-user").html(res);
+            }
+        })
+    }
+</script>
+
 <script>
     $(function() {
         $("#mobile").intlTelInput({
@@ -117,11 +218,11 @@
             autoFormat: false,
             autoHideDialCode: false,
             autoPlaceholder: false,
-            defaultCountry: "gh",
+            // defaultCountry: "gh",
             // ipinfoToken: "yolo",
             nationalMode: false,
             numberType: "MOBILE",
-            preferredCountries: ['gh', 'us'],
+            preferredCountries: [],
             preventInvalidNumbers: true,
         });
     });
@@ -179,6 +280,9 @@
             { 
                 $(".manualFrm").trigger('reset');
                 $("#output").html('').addClass('hide');
+                $("#mobile").removeAttr('readonly');
+
+                alert(data.message);
 
                 var content = "<style type=\"text/css\">@media print {"+
                     "html, body {display:block;margin:0!important; padding:0 !important;overflow:hidden;display:table;}"+
@@ -204,11 +308,12 @@
                 content += "</div>";    
 
                 // print 
-                printThis(content);
+                // printThis(content);
 
             } 
             else 
             {  
+                alert(data.exception)
                 $("#output").html(data.exception).removeClass('hide');
             }
         },

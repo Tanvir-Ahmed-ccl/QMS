@@ -6,24 +6,40 @@ use Illuminate\Http\Request;
 use App\Http\Requests; 
 use App\Models\Counter;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Validator, App;
 
 class CounterController extends Controller
 {
 	public function index()
 	{   
+        if(issetAccess(Auth::user()->user_role_id)->counter['read'] == false) // Unless the user has access
+        {
+            return redirect('login')->with('exception',trans('app.you_are_not_authorized'));
+        }
+
         $counters = Counter::where('company_id', auth()->user()->company_id)->get();
     	return view('backend.admin.counter.list', ['counters' => $counters]);
 	}
 
     public function showForm()
     {
+        if(issetAccess(Auth::user()->user_role_id)->counter['write'] == false) // Unless the user has access
+        {
+            return redirect('login')->with('exception',trans('app.you_are_not_authorized'));
+        }
+
         $keyList = $this->keyList();
     	return view('backend.admin.counter.form', compact('keyList'));
     }
     
     public function create(Request $request)
     {     
+        if(issetAccess(Auth::user()->user_role_id)->location['read'] == false) // Unless the user has access
+        {
+            return redirect('login')->with('exception',trans('app.you_are_not_authorized'));
+        }
+
         @date_default_timezone_set(session('app.timezone'));
         
         $validator = Validator::make($request->all(), [ 
@@ -49,14 +65,14 @@ class CounterController extends Controller
 
             if(Counter::where(['company_id' => $companyId, 'name' => $request->name])->exists())
             {
-                return redirect('admin/department/create')
+                return redirect('admin/counter/create')
                 ->withErrors(['name' => 'Counter is already exists'])
                 ->withInput();
             }
 
             if(Counter::where(['company_id' => $companyId, 'key' => $request->key])->exists())
             {
-                return redirect('admin/department/create')
+                return redirect('admin/counter/create')
                 ->withErrors(['name' => 'This key is already exists'])
                 ->withInput();
             }
@@ -84,6 +100,11 @@ class CounterController extends Controller
  
     public function showEditForm($id = null)
     {
+        if(issetAccess(Auth::user()->user_role_id)->counter['write'] == false) // Unless the user has access
+        {
+            return redirect('login')->with('exception',trans('app.you_are_not_authorized'));
+        }
+
         $counter = Counter::where('id', $id)->first();
         $keyList = $this->keyList();
         return view('backend.admin.counter.edit', compact('counter', 'keyList'));
@@ -91,6 +112,11 @@ class CounterController extends Controller
   
     public function update(Request $request)
     { 
+        if(issetAccess(Auth::user()->user_role_id)->counter['write'] == false) // Unless the user has access
+        {
+            return redirect('login')->with('exception',trans('app.you_are_not_authorized'));
+        }
+
         @date_default_timezone_set(session('app.timezone')); 
 
         $validator = Validator::make($request->all(), [ 
@@ -114,14 +140,14 @@ class CounterController extends Controller
 
             if(Counter::where('id', "!=", $request->id)->where(['company_id' => $companyId, 'name' => $request->name])->exists())
             {
-                return redirect('admin/department/create')
+                return redirect('admin/counter/edit')
                 ->withErrors(['name' => 'Counter is already exists'])
                 ->withInput();
             }
 
             if(Counter::where('id', '!=' ,$request->id)->where(['company_id' => $companyId, 'key' => $request->key])->exists())
             {
-                return redirect('admin/department/create')
+                return redirect('admin/counter/edit')
                 ->withErrors(['name' => 'This key is already exists'])
                 ->withInput();
             }
@@ -147,8 +173,14 @@ class CounterController extends Controller
  
     public function delete($id = null)
     {
+        if(issetAccess(Auth::user()->user_role_id)->counter['write'] == false) // Unless the user has access
+        {
+            return redirect('login')->with('exception',trans('app.you_are_not_authorized'));
+        }
+
         $delete = Counter::where('id', $id)
             ->delete();
+        DB::table('token_setting')->where('counter_id', $id)->delete();
         return redirect('admin/counter')->with('message', trans('app.delete_successfully'));
     }  
 

@@ -518,45 +518,59 @@ class TokenController extends Controller
         } 
         else 
         { 
-            $newTokenNo = (new Token_lib)->newToken($request->department_id, $request->counter_id, $request->is_vip);
 
-            $save = Token::insert([
-                'company_id'    => auth()->user()->company_id,
-                'token_no'      => $newTokenNo,
-                'client_mobile' => $request->client_mobile,
-                'department_id' => $request->department_id,
-                'counter_id'    => $request->counter_id, 
-                'user_id'       => $request->user_id, 
-                'note'          => $request->note, 
-                'created_at'    => now(),
-                'created_by'    => auth()->user()->id,
-                'updated_at'    => null,
-                'is_vip'        => $request->is_vip,
-                'status'        => 0 
-            ]);
+            if(DB::table("otps")->where(['phone' => $request->client_mobile, 'otp' => $request->otp])->exists())
+            {
+                DB::table("otps")->where(['phone' => $request->client_mobile, 'otp' => $request->otp])->delete();
 
-            if ($save) { 
-                $token = Token::select(
-                    'token.*', 
-                    'department.name as department', 
-                    'counter.name as counter', 
-                    'user.firstname', 
-                    'user.lastname'
-                )
-                ->leftJoin('department', 'token.department_id', '=', 'department.id')
-                ->leftJoin('counter', 'token.counter_id', '=', 'counter.id')
-                ->leftJoin('user', 'token.user_id', '=', 'user.id')
-                ->whereDate('token.created_at', date("Y-m-d"))
-                ->where('token.token_no', $newTokenNo)
-                ->first(); 
+                $newTokenNo = (new Token_lib)->newToken($request->department_id, $request->counter_id, $request->is_vip);
 
-                $data['status'] = true;
-                $data['message'] = trans('app.token_generate_successfully');
-                $data['token']  = $token;
-            } else {
-                $data['status'] = false;
-                $data['exception'] = trans('app.please_try_again');
+                $save = Token::insert([
+                    'company_id'    => auth()->user()->company_id,
+                    'token_no'      => $newTokenNo,
+                    'client_mobile' => $request->client_mobile,
+                    'department_id' => $request->department_id,
+                    'section_id' => $request->section_id,
+                    'counter_id'    => $request->counter_id, 
+                    'user_id'       => $request->user_id, 
+                    'note'          => $request->note, 
+                    'created_at'    => now(),
+                    'created_by'    => auth()->user()->id,
+                    'updated_at'    => null,
+                    'is_vip'        => $request->is_vip,
+                    'status'        => 0 
+                ]);
+
+                if ($save) { 
+                    $token = Token::select(
+                        'token.*', 
+                        'department.name as department', 
+                        'counter.name as counter', 
+                        'user.firstname', 
+                        'user.lastname'
+                    )
+                    ->leftJoin('department', 'token.department_id', '=', 'department.id')
+                    ->leftJoin('counter', 'token.counter_id', '=', 'counter.id')
+                    ->leftJoin('user', 'token.user_id', '=', 'user.id')
+                    ->whereDate('token.created_at', date("Y-m-d"))
+                    ->where('token.token_no', $newTokenNo)
+                    ->first(); 
+
+                    $data['status'] = true;
+                    $data['sms'] = sendSMSByTwilio($request->client_mobile, "Click here to get your token " . route('show.single.token', $token->id));
+                    $data['message'] = trans('app.token_generate_successfully');
+                    $data['token']  = $token;
+                } else {
+                    $data['status'] = false;
+                    $data['exception'] = trans('app.please_try_again');
+                }
             }
+            else 
+            {
+                $data['status'] = false;
+                $data['exception'] = "OTP Not Matched";
+            }
+
         }
         return response()->json($data);
     } 
@@ -568,14 +582,29 @@ class TokenController extends Controller
     public function current()
     {  
         @date_default_timezone_set(session('app.timezone'));
-        $tokens = Token::whereHas('department', function($q)
+
+        if(issetAccess(auth()->user()->user_role_id)->token['active_token']['all_token'] ==1)
         {
-            $q->where('company_id', auth()->user()->company_id);
-        })
-        ->where('status', '0')
-        ->orderBy('is_vip', 'DESC')
-        ->orderBy('id', 'ASC')
-        ->get(); 
+            $tokens = Token::whereHas('department', function($q)
+            {
+                $q->where('company_id', auth()->user()->company_id);
+            })
+            ->where('created_at', '<=',today())
+            ->where('status', '0')
+            ->orderBy('is_vip', 'DESC')
+            ->orderBy('id', 'ASC')
+            ->get(); 
+        }
+        elseif(issetAccess(auth()->user()->user_role_id)->token['active_token']['own_token'] ==1)
+        {
+            $tokens = Token::where('status', '0')
+            ->where('user_id', auth()->user()->id)
+            ->where('created_at', '<=', today())
+            ->orderBy('is_vip', 'DESC')
+            ->orderBy('id', 'ASC')
+            ->get(); 
+        }
+        
 
         $counters = Counter::where('company_id', auth()->user()->company_id)->where('status',1)->pluck('name','id');
         $departments = Department::where('company_id', auth()->user()->company_id)->where('status',1)->pluck('name','id');
@@ -584,7 +613,7 @@ class TokenController extends Controller
             ->where('user_type',1)
             ->where('status',1)
             ->orderBy('firstname', 'ASC')
-            ->pluck('name', 'id'); 
+            ->pluck('name', 'id');
 
         return view('backend.admin.token.current', compact('counters', 'departments', 'officers', 'tokens'));
     } 
@@ -734,23 +763,45 @@ class TokenController extends Controller
                     <a href=\"".url("admin/token/delete/$token->id")."\" class=\"btn btn-danger btn-sm\" onclick=\"return confirm('Are you sure?');\" title=\"Delete\"><i class=\"fa fa-times\"></i></a>"; 
                 $options .= "</div>"; 
 
-                $data[] = [
-                    'serial'     => $loop++,
-                    'token_no'   => (!empty($token->is_vip)?("<span class=\"label label-danger\" title=\"VIP\">$token->token_no</span>"):$token->token_no),
-                    'department' => (!empty($token->department)?$token->department->name:null),
-                    'counter'    => (!empty($token->counter)?$token->counter->name:null),
-                    'officer'    => (!empty($token->officer)?("<a href='".url("admin/user/view/{$token->officer->id}")."'>".$token->officer->firstname." ". $token->officer->lastname."</a>"):null),
+                if(issetAccess(auth()->user()->user_role_id)->token['token_report']['write']){
+                    $data[] = [
+                        'serial'     => $loop++,
+                        'token_no'   => (!empty($token->is_vip)?("<span class=\"label label-danger\" title=\"VIP\">$token->token_no</span>"):$token->token_no),
+                        'department' => (!empty($token->department)?$token->department->name:null),
+                        'counter'    => (!empty($token->counter)?$token->counter->name:null),
+                        'officer'    => (!empty($token->officer)?("<a href='".url("admin/user/view/{$token->officer->id}")."'>".$token->officer->firstname." ". $token->officer->lastname."</a>"):null),
 
-                    'client_mobile'    => $token->client_mobile. "<br/>" .(!empty($token->client)?("(<a href='".url("admin/user/view/{$token->client->id}")."'>".$token->client->firstname." ". $token->client->lastname."</a>)"):null),
+                        'client_mobile'    => $token->client_mobile. "<br/>" .(!empty($token->client)?("(<a href='".url("admin/user/view/{$token->client->id}")."'>".$token->client->firstname." ". $token->client->lastname."</a>)"):null),
 
-                    'note'       => $token->note,
-                    'status'     => (($token->status==1)?("<span class='label label-success'>".trans('app.complete')."</span>"):(($token->status==2)?"<span class='label label-danger'>".trans('app.stop')."</span>":"<span class='label label-primary'>".trans('app.pending')."</span>")).(!empty($token->is_vip)?('<span class="label label-danger" title="VIP">VIP</span>'):''),
-                    'created_by'    => (!empty($token->generated_by)?("<a href='".url("admin/user/view/{$token->generated_by->id}")."'>".$token->generated_by->firstname." ". $token->generated_by->lastname."</a>"):null),
-                    'created_at' => (!empty($token->created_at)?date('j M Y h:i a',strtotime($token->created_at)):null),
-                    'updated_at' => (!empty($token->updated_at)?date('j M Y h:i a',strtotime($token->updated_at)):null),
-                    'complete_time' => $complete_time,
-                    'options'    => $options
-                ];  
+                        'note'       => $token->note,
+                        'status'     => (($token->status==1)?("<span class='label label-success'>".trans('app.complete')."</span>"):(($token->status==2)?"<span class='label label-danger'>".trans('app.stop')."</span>":"<span class='label label-primary'>".trans('app.pending')."</span>")).(!empty($token->is_vip)?('<span class="label label-danger" title="VIP">VIP</span>'):''),
+                        'created_by'    => (!empty($token->generated_by)?("<a href='".url("admin/user/view/{$token->generated_by->id}")."'>".$token->generated_by->firstname." ". $token->generated_by->lastname."</a>"):null),
+                        'created_at' => (!empty($token->created_at)?date('j M Y h:i a',strtotime($token->created_at)):null),
+                        'updated_at' => (!empty($token->updated_at)?date('j M Y h:i a',strtotime($token->updated_at)):null),
+                        'complete_time' => $complete_time,
+                        'options'    => $options
+                    ];  
+                }
+                else
+                {
+                    $data[] = [
+                        'serial'     => $loop++,
+                        'token_no'   => (!empty($token->is_vip)?("<span class=\"label label-danger\" title=\"VIP\">$token->token_no</span>"):$token->token_no),
+                        'department' => (!empty($token->department)?$token->department->name:null),
+                        'counter'    => (!empty($token->counter)?$token->counter->name:null),
+                        'officer'    => (!empty($token->officer)?("<a href='".url("admin/user/view/{$token->officer->id}")."'>".$token->officer->firstname." ". $token->officer->lastname."</a>"):null),
+
+                        'client_mobile'    => $token->client_mobile. "<br/>" .(!empty($token->client)?("(<a href='".url("admin/user/view/{$token->client->id}")."'>".$token->client->firstname." ". $token->client->lastname."</a>)"):null),
+
+                        'note'       => $token->note,
+                        'status'     => (($token->status==1)?("<span class='label label-success'>".trans('app.complete')."</span>"):(($token->status==2)?"<span class='label label-danger'>".trans('app.stop')."</span>":"<span class='label label-primary'>".trans('app.pending')."</span>")).(!empty($token->is_vip)?('<span class="label label-danger" title="VIP">VIP</span>'):''),
+                        'created_by'    => (!empty($token->generated_by)?("<a href='".url("admin/user/view/{$token->generated_by->id}")."'>".$token->generated_by->firstname." ". $token->generated_by->lastname."</a>"):null),
+                        'created_at' => (!empty($token->created_at)?date('j M Y h:i a',strtotime($token->created_at)):null),
+                        'updated_at' => (!empty($token->updated_at)?date('j M Y h:i a',strtotime($token->updated_at)):null),
+                        'complete_time' => $complete_time,
+                        "options"   =>  ''
+                    ]; 
+                }
             }
         }
             

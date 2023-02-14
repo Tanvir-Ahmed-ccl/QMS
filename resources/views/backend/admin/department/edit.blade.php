@@ -14,7 +14,7 @@
 
     <div class="panel-body"> 
 
-        {{ Form::open(['url' => 'admin/department/edit', 'class'=>'col-md-7 col-sm-8']) }}
+        {{ Form::open(['url' => 'admin/location/edit', 'class'=>'col-md-7 col-sm-8']) }}
 
             <input type="hidden" name="id" value="{{ $department->id }}">
 

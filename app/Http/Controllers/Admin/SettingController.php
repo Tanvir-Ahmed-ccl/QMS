@@ -23,6 +23,11 @@ class SettingController extends Controller
 {
     public function showForm()
     {
+        if(issetAccess(Auth::user()->user_role_id)->setting['app_setting'] == false) // Unless the user has access
+        {
+            return redirect('login')->with('exception',trans('app.you_are_not_authorized'));
+        }
+
         $setting = Setting::where('company_id', auth()->user()->company_id)->first();
         if (empty($setting)) 
         {
@@ -154,6 +159,11 @@ class SettingController extends Controller
 
     public function showSubscription()
     {
+        if(issetAccess(Auth::user()->user_role_id)->setting['subsription'] == false) // Unless the user has access
+        {
+            return redirect('login')->with('exception',trans('app.you_are_not_authorized'));
+        }
+
         $company = companyOwner(Auth::id());
         $toDate = Carbon::parse(now());
         $fromDate = Carbon::parse($company->created_at);

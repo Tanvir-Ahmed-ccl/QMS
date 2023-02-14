@@ -9,6 +9,8 @@ class Token extends Model
     protected $table = "token";
     public $timestamps = false;
     
+    
+
     public function department() 
     {
         return $this->hasOne('App\Models\Department', 'id', 'department_id');
@@ -17,6 +19,11 @@ class Token extends Model
     public function counter() 
     {
         return $this->hasOne('App\Models\Counter', 'id', 'counter_id');
+    }
+
+    public function section()
+    {
+        return $this->hasOne('App\Models\Section', 'id', 'section_id');
     }
 
     public function officer() 

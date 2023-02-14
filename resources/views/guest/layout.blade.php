@@ -122,11 +122,12 @@
                     autoFormat: false,
                     autoHideDialCode: false,
                     autoPlaceholder: false,
-                    defaultCountry: "gh",
+                    // defaultCountry: "gh",
+                    defaultCountry: null,
                     // ipinfoToken: "yolo",
                     nationalMode: false,
                     numberType: "MOBILE",
-                    preferredCountries: ['gh', 'us'],
+                    // preferredCountries: ['gh', 'us'],
                     preventInvalidNumbers: true,
                 });
             });

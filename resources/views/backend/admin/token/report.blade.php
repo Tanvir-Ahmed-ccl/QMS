@@ -63,7 +63,7 @@
                     <th>{{ trans('app.created_at') }}</th>
                     <th>{{ trans('app.updated_at') }}</th>
                     <th>{{ trans('app.complete_time') }}</th>
-                    <th>{{ trans('app.action') }}</th>
+                    <th><i class="fa fa-cogs"></i></th>
                 </tr> 
             </thead>  
         </table>  
@@ -154,7 +154,7 @@
                 { data: 'created_at' },
                 { data: 'updated_at' }, 
                 { data: 'complete_time' },
-                { data: 'options' }  
+                { data: 'options' }
             ],  
             order: [ [0, 'desc'] ], 
             select    : true,

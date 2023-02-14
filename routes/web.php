@@ -67,6 +67,20 @@ Route::get('clean', function () {
 });
 
 
+Route::get("ajax/load/section", 'AjaxController@section')->name('ajax.load.section');
+Route::get("ajax/load/counter", 'AjaxController@counter')->name('ajax.load.counter');
+Route::get("ajax/load/user", 'AjaxController@user')->name('ajax.load.user');
+Route::get("ajax/send/otp", 'AjaxController@sendOtp')->name('ajax.send.otp');
+Route::get("token/{id}", 'AjaxController@showSingleToken')->name('show.single.token');
+
+
+// book a token
+Route::get("book/token/{companyId}", 'TokenBookingController@showTokenBooking')->name('book.token.index');
+Route::post("book/token", 'TokenBookingController@storeBooking')->name('book.token.store');
+
+
+# book apoinment
+Route::get('admin/book','TokenBookingController@index')->name('book.index');
 # -----------------------------------------------------------
 # COMMON 
 # -----------------------------------------------------------
@@ -123,6 +137,8 @@ Route::get("qr/{token}", 'FrontendController@guestLogin')->name('guestLogin');
 Route::post("guest/token", 'FrontendController@guestAutoToken')->name('guest.token');
 Route::post("guest/serial", 'FrontendController@guestTokenSerial')->name('guest.serial');
 Route::get("guest/phone/check", 'FrontendController@guestPhoneCheck')->name('guest.phone.check');
+Route::get("guest/send-otp", 'FrontendController@sendOtpToPhone')->name('guest.send.otp');
+
 
 // captcha
 Route::get('my-captcha', 'FrontendController@myCaptcha')->name('myCaptcha');
@@ -173,13 +189,13 @@ Route::group(['middleware' => ['auth', 'checkSubscription', 'checkEmail']], func
 		Route::post('user-type/edit','UserTypeController@update');
 		Route::get('user-type/delete/{id}','UserTypeController@delete');
 
-		# department
-		Route::get('department','DepartmentController@index');
-		Route::get('department/create','DepartmentController@showForm');
-		Route::post('department/create','DepartmentController@create');
-		Route::get('department/edit/{id}','DepartmentController@showEditForm');
-		Route::post('department/edit','DepartmentController@update');
-		Route::get('department/delete/{id}','DepartmentController@delete');
+		# location
+		Route::get('location','DepartmentController@index');
+		Route::get('location/create','DepartmentController@showForm');
+		Route::post('location/create','DepartmentController@create');
+		Route::get('location/edit/{id}','DepartmentController@showEditForm');
+		Route::post('location/edit','DepartmentController@update');
+		Route::get('location/delete/{id}','DepartmentController@delete');
 
 		# counter
 		Route::get('counter','CounterController@index');
@@ -306,6 +322,14 @@ Route::post('owner/otp-login', 'Owner\OwnerController@otpLogin')->name('owner.ot
 Route::post('owner/login', 'Owner\OwnerController@login')->name('owner.login');
 
 Route::group(['middleware' => ['auth:owner']], function(){
+
+	// Sliders
+	Route::get('owner/slider', 'Owner\SliderController@index')->name('slider.index');
+	Route::get('owner/slider/create', 'Owner\SliderController@create')->name('slider.create');
+	Route::post('owner/slider/store', 'Owner\SliderController@store')->name('slider.store');
+	Route::get('owner/slider/{key}/edit', 'Owner\SliderController@edit')->name('slider.edit');
+	Route::post('owner/slider/update', 'Owner\SliderController@update')->name('slider.update');
+	Route::get('owner/slider/{key}/destroy', 'Owner\SliderController@destroy')->name('slider.destroy');
 
 	Route::get('owner/dashboard', 'Owner\OwnerController@dashboard')->name('owner.dashboard');
 	Route::get('owner/stripe', 'Owner\OwnerController@stripe')->name('owner.stripe');

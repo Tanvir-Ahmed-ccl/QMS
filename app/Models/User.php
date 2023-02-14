@@ -50,7 +50,7 @@ class User extends Authenticatable
 
     public function userRole()
     {
-        return $this->belongsTo('App\Models\UserType','user_role_id', 'id');
+        return $this->belongsTo('App\Models\UserType', 'user_role_id','id');
     }
 
     public function accounts()

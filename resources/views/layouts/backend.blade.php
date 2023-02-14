@@ -67,120 +67,182 @@
                     <div id="cm-menu-scroller">
                         <ul class="cm-menu-items">
                             <!-- // ADMIN MENU -->
-                            @if(Auth::user()->hasRole('admin')) 
+                            {{-- @if(Auth::user()->hasRole('admin')) --}}
                             <li class="{{ ((Request::is('admin')) ? 'active' : '') }}">
                                 <a href="{{ url('admin') }}" class="sf-dashboard">
                                     {{ trans('app.dashboard') }}
                                 </a>
                             </li>
 
-                            <li class="cm-submenu {{ (Request::segment(2)=='department' ? 'open' : '') }}">
+                            @if(issetAccess(auth()->user()->user_role_id)->location['read'] || issetAccess(auth()->user()->user_role_id)->location['write'])
+                            <li class="cm-submenu {{ (Request::segment(2)=='location' ? 'open' : '') }}">
                                 <a class="sf-carton">{{ trans('app.department') }} <span class="caret"></span></a>
                                 <ul>
-                                    <li class="{{ (Request::is('admin/department/create') ? 'active' : '') }}">
-                                        <a href="{{ url('admin/department/create') }}">{{ trans('app.add_department') }}</a>
+                                    @if (issetAccess(auth()->user()->user_role_id)->location['write'])
+                                    <li class="{{ (Request::is('admin/location/create') ? 'active' : '') }}">
+                                        <a href="{{ url('admin/location/create') }}">{{ trans('app.add_department') }}</a>
                                     </li>
-                                    <li class="{{ (Request::is('admin/department') ? 'active' : '') }}">
-                                        <a href="{{ url('admin/department') }}">{{ trans('app.department_list') }}</a>
+                                    @endif
+
+                                    @if (issetAccess(auth()->user()->user_role_id)->location['read'])
+                                    <li class="{{ (Request::is('admin/location') ? 'active' : '') }}">
+                                        <a href="{{ url('admin/location') }}">{{ trans('app.department_list') }}</a>
                                     </li>
+                                    @endif
                                 </ul>
                             </li> 
+                            @endif
 
+                            {{-- Section --}}
+                            @if(issetAccess(auth()->user()->user_role_id)->section['read'] || issetAccess(auth()->user()->user_role_id)->section['write'])
                             <li class="cm-submenu {{ (Request::segment(2)=='section' ? 'open' : '') }}">
                                 <a class="sf-carton">{{ trans('Section') }} <span class="caret"></span></a>
                                 <ul>
+                                    @if (issetAccess(auth()->user()->user_role_id)->section['write'])
                                     <li class="{{ (Request::is('admin/section/create') ? 'active' : '') }}">
                                         <a href="{{ url('admin/section/create') }}">{{ trans('Add Section') }}</a>
                                     </li>
+                                    @endif
+
+                                    @if (issetAccess(auth()->user()->user_role_id)->section['read'])
                                     <li class="{{ (Request::is('admin/section') ? 'active' : '') }}">
                                         <a href="{{ url('admin/section') }}">{{ trans('Section List') }}</a>
                                     </li>
+                                    @endif
                                 </ul>
                             </li> 
+                            @endif
 
+                            {{-- Counter --}}
+                            @if(issetAccess(auth()->user()->user_role_id)->counter['read'] || issetAccess(auth()->user()->user_role_id)->counter['write'])
                             <li class="cm-submenu {{ (Request::segment(2)=='counter' ? 'open' : '') }}">
                                 <a class="sf-star">{{ trans('app.counter') }} <span class="caret"></span></a>
                                 <ul>
+                                    @if(issetAccess(auth()->user()->user_role_id)->counter['write'])
                                     <li class="{{ (Request::is('admin/counter/create') ? 'active' : '') }}">
                                         <a href="{{ url('admin/counter/create') }}">{{ trans('app.add_counter') }}</a>
                                     </li>
+                                    @endif
+
+                                    @if(issetAccess(auth()->user()->user_role_id)->counter['read'])
                                     <li class="{{ (Request::is('admin/counter') ? 'active' : '') }}">
                                         <a href="{{ url('admin/counter') }}">{{ trans('app.counter_list') }}</a>
                                     </li>
+                                    @endif
                                 </ul>
-                            </li> 
+                            </li>
+                            @endif 
 
+                            {{-- user type --}}
+                            @if(issetAccess(auth()->user()->user_role_id)->user_type['read'] || issetAccess(auth()->user()->user_role_id)->user_type['write'])
                             <li class="cm-submenu {{ (Request::segment(2)=='user-type' ? 'open' : '') }}">
                                 <a class="sf-profile-group">{{ trans('User Type') }} <span class="caret"></span></a>
                                 <ul>
+                                    @if(issetAccess(auth()->user()->user_role_id)->user_type['write'])
                                     <li class="{{ (Request::is('admin/user-type/create') ? 'active' : '') }}">
                                         <a href="{{ url('admin/user-type/create') }}">{{ trans('New User Type') }}</a>
                                     </li>
+                                    @endif
+
+                                    @if(issetAccess(auth()->user()->user_role_id)->counter['read'])
                                     <li class="{{ (Request::is('admin/user-type') ? 'active' : '') }}">
                                         <a href="{{ url('admin/user-type') }}">{{ trans('User type List') }}</a>
                                     </li>
+                                    @endif
                                 </ul>
                             </li>
+                            @endif
 
+                            {{-- user --}}
+                            @if(issetAccess(auth()->user()->user_role_id)->users['read'] || issetAccess(auth()->user()->user_role_id)->user['write'])
                             <li class="cm-submenu {{ (Request::segment(2)=='user' ? 'open' : '') }}">
                                 <a class="sf-profile-group">{{ trans('app.users') }} <span class="caret"></span></a>
                                 <ul>
+                                    @if(issetAccess(auth()->user()->user_role_id)->users['write'])
                                     <li class="{{ (Request::is('admin/user/create') ? 'active' : '') }}">
                                         <a href="{{ url('admin/user/create') }}">{{ trans('app.add_user') }}</a>
                                     </li>
+                                    @endif
+
+                                    @if(issetAccess(auth()->user()->user_role_id)->users['read'])
                                     <li class="{{ (Request::is('admin/user') ? 'active' : '') }}">
                                         <a href="{{ url('admin/user') }}">{{ trans('app.user_list') }}</a>
                                     </li>
+                                    @endif
                                 </ul>
                             </li> 
+                            @endif
 
-
-                            
-
+                            {{-- SMS --}}
+                            @if(issetAccess(auth()->user()->user_role_id)->sms['read'] || issetAccess(auth()->user()->user_role_id)->sms['write'])
                             <li class="cm-submenu {{ (Request::segment(2)=='sms' ? 'open' : '') }}">
                                 <a class="sf-bubbles">{{ trans('app.sms') }} <span class="caret"></span></a>
                                 <ul>
+                                    @if(issetAccess(auth()->user()->user_role_id)->sms['write'])
                                     <li class="{{ (Request::is('admin/sms/new') ? 'active' : '') }}">
                                         <a href="{{ url('admin/sms/new') }}">{{ trans('app.new_sms') }}</a>
                                     </li>
+                                    @endif
+
+                                    @if(issetAccess(auth()->user()->user_role_id)->sms['read'])
                                     <li class="{{ (Request::is('admin/sms/list') ? 'active' : '') }}">
                                         <a href="{{ url('admin/sms/list') }}">{{ trans('app.sms_history') }}</a>
                                     </li>
+                                    @endif
                                     {{-- <li class="bg-danger {{ (Request::is('admin/sms/setting') ? 'active' : '') }}">
                                         <a href="{{ url('admin/sms/setting') }}">{{ trans('app.sms_setting') }}</a>
                                     </li> --}}
                                 </ul>
                             </li> 
+                            @endif
 
+                            {{-- token --}}
                             <li class="cm-submenu {{ (Request::segment(2)=='token' ? 'open' : '') }}">
                                 <a class="sf-user-id">{{ trans('app.token') }} <span class="caret"></span></a>
                                 <ul>
+                                    @if(issetAccess(auth()->user()->user_role_id)->token['auto_token'])
                                     <li class="{{ (Request::is('admin/token/list') ? 'active' : '') }}">
                                         <a href="{{ url('admin/token/auto') }}">{{ trans('app.auto_token') }}</a>
                                     </li>
+                                    @endif
+
+                                    @if(issetAccess(auth()->user()->user_role_id)->token['manual_token'])
                                     <li class="{{ (Request::is('admin/token/create') ? 'active' : '') }}">
                                         <a href="{{ url('admin/token/create') }}">{{ trans('app.manual_token') }}</a>
                                     </li>
+                                    @endif
+
+                                    @if(issetAccess(auth()->user()->user_role_id)->token['active_token']['all_token'] || issetAccess(auth()->user()->user_role_id)->token['active_token']['own_token'])
                                     <li class="{{ (Request::is('admin/token/current') ? 'active' : '') }}">
                                         <a href="{{ url('admin/token/current') }}">{{ trans('app.active') }} / {{ trans('app.todays_token') }} <i class="fa fa-dot-circle-o" style="color:#03d003"></i></a>
-                                    </li> 
+                                    </li>
+                                    @endif
+
+                                    @if(issetAccess(auth()->user()->user_role_id)->token['token_report']['read'] || issetAccess(auth()->user()->user_role_id)->token['token_report']['write'])
                                     <li class="{{ (Request::is('admin/token/report') ? 'active' : '') }}">
                                         <a href="{{ url('admin/token/report') }}">{{ trans('app.token_report') }}</a>
                                     </li> 
+                                    @endif
+
+                                    @if(issetAccess(auth()->user()->user_role_id)->token['performance_report'])
                                     <li class="{{ (Request::is('admin/token/performance') ? 'active' : '') }}">
                                         <a href="{{ url('admin/token/performance') }}">{{ trans('app.performance_report') }}</a>
                                     </li> 
+                                    @endif
+
+                                    @if(issetAccess(auth()->user()->user_role_id)->token['auto_token_setting'])
                                     <li class="bg-danger {{ (Request::is('admin/token/setting') ? 'active' : '') }}">
                                         <a href="{{ url('admin/token/setting') }}">{{ trans('app.auto_token_setting') }}</a>
                                     </li>
+                                    @endif
                                 </ul>
                             </li>  
-                            @endif
+                            {{-- @endif --}}
 
                             <!-------------------------------------------------------->
                             <!-- OFFICER MENU                                       -->
                             <!-------------------------------------------------------->
-                            @if(Auth::user()->hasRole('officer'))  
+                            {{-- @if(Auth::user()->hasRole('officer'))  
                             <li class="{{ ((Request::is('officer')) ? 'active' : '') }}">
                                 <a href="{{ url('officer') }}" class="sf-dashboard">
                                     {{ trans('app.dashboard') }} 
@@ -199,12 +261,12 @@
                                     </li> 
                                 </ul>
                             </li>  
-                            @endif
+                            @endif --}}
 
                             <!-------------------------------------------------------->
                             <!-- RECEPTIONIST MENU                               -->
                             <!-------------------------------------------------------->
-                            @if(Auth::user()->hasRole('receptionist'))  
+                            {{-- @if(Auth::user()->hasRole('receptionist'))  
                             <li class="cm-submenu {{ ((Request::is('receptionist') || Request::segment(2)=='token') ? 'open' : '') }}">
                                 <a class="sf-user-id">{{ trans('app.token') }} <span class="caret"></span></a>
                                 <ul>
@@ -219,13 +281,13 @@
                                     </li> 
                                 </ul>
                             </li> 
-                            @endif
+                            @endif --}}
 
  
                             <!-------------------------------------------------------->
                             <!-- COMMON MENU                                        -->
                             <!-------------------------------------------------------->
-
+                            @if(issetAccess(auth()->user()->user_role_id)->display)
                             <li class="cm-submenu {{ (Request::segment(2)=='display' ? 'open' : '') }}">
                                 <a target="_blank" class="sf-device-tablet">
                                     {{ trans('app.display') }} 
@@ -257,7 +319,10 @@
                                     @endif 
                                 </ul>
                             </li> 
+                            @endif
 
+                            {{-- Message --}}
+                            @if(issetAccess(auth()->user()->user_role_id)->message)
                             <li class="cm-submenu {{ (Request::segment(2)=='message' ? 'open' : '') }}">
                                 <a class="sf-envelope-letter">{{ trans('app.message') }} <span class="caret"></span></a>
                                 <ul>
@@ -272,30 +337,44 @@
                                     </li>
                                 </ul>
                             </li> 
+                            @endif
 
+                            {{-- Settings --}}
                             <li class="cm-submenu {{ (Request::segment(2)=='setting' ? 'open' : '') }}">
                                 <a class="sf-cog">{{ trans('app.setting') }} <span class="caret"></span></a>
                                 <ul>
-                                    @if (auth()->user()->hasRole('admin'))
+                                    @if(issetAccess(auth()->user()->user_role_id)->setting['app_setting'])
                                     <li class="{{ (Request::is('admin/setting') ? 'active' : '') }}">
                                         <a href="{{ url('admin/setting') }}">{{ trans('app.app_setting') }}</a>
                                     </li>
+                                    @endif
+
+                                    @if(issetAccess(auth()->user()->user_role_id)->setting['subsription'])
                                     <li class="{{ (Request::is('admin/subscription') ? 'active' : '') }}">
                                         <a href="{{ url('admin/subscription') }}">Subscription</a>
                                     </li>
+                                    @endif
+
+                                    @if(issetAccess(auth()->user()->user_role_id)->setting['display_setting'])
                                     <li class="{{ (Request::is('admin/setting/display') ? 'active' : '') }}">
                                         <a href="{{ url('admin/setting/display') }}">{{ trans('app.display_setting') }}</a>
                                     </li>
                                     @endif
 
+                                    @if(issetAccess(auth()->user()->user_role_id)->setting['profile_information'])
                                     <li class="{{ (Request::is('common/setting/*') ? 'active' : '') }}">
                                         <a href="{{ url('common/setting/profile') }}">{{ trans('app.profile_information') }}</a>
                                     </li>
+                                    @endif
                                 </ul>
                             </li>
                             
                             <li class="{{ (Request::is('qrcode') ? 'active' : '') }}">
                                 <a href="{{ url('qrcode') }}" class="sf-star">QR CODE</a>
+                            </li>
+
+                            <li class="{{ (Request::is('qrcode') ? 'active' : '') }}">
+                                <a href="{{ route('book.index') }}" class="sf-star">Book Apoinment</a>
                             </li>
 
                             <li class="{{ ((Request::is('logout')) ? 'active' : '') }}">
@@ -322,6 +401,7 @@
                 <!-- Buy Now -->
                 @yield('info.buy-now')
 
+                @if(issetAccess(auth()->user()->user_role_id)->display)
                 <div class="dropdown pull-right">
                     <button class="btn btn-primary md-desktop-windows-white" data-toggle="dropdown"></button>
                     <div class="popover cm-popover bottom">
@@ -354,10 +434,14 @@
                         </div>
                     </div>
                 </div> 
+                @endif
 
+                @if(issetAccess(auth()->user()->user_role_id)->message)
                 <div class="dropdown pull-right">
                     <a href="{{ url('common/message/inbox') }}" class="btn btn-primary md-local-post-office-white"> <span class="label label-danger" id="message-notify">0</span> </a> 
                 </div>
+                @endif
+
                 <div class="dropdown pull-right">
                     <button class="btn btn-primary md-language-white" data-toggle="dropdown"> <span class="label label-danger">{{ Session::get('locale')? Session::get('locale'):'en' }}</span></button>
                     <div class="popover cm-popover bottom">
@@ -408,7 +492,7 @@
                         <li class="disabled text-center">
                             <a style="cursor:default;"><strong>{{ $user->firstname .' '. $user->lastname }}</strong> 
                             </a>
-                            <span class="label label-success">{{ auth()->user()->role() }}</span>
+                            <span class="label label-success">{{ auth()->user()->userRole()->name ?? '' }}</span>
                         </li>
                         <li class="divider"></li>
                         <li>
