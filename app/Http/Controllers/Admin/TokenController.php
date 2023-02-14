@@ -530,6 +530,7 @@ class TokenController extends Controller
                     'token_no'      => $newTokenNo,
                     'client_mobile' => $request->client_mobile,
                     'department_id' => $request->department_id,
+                    'section_id' => $request->section_id,
                     'counter_id'    => $request->counter_id, 
                     'user_id'       => $request->user_id, 
                     'note'          => $request->note, 
@@ -588,6 +589,7 @@ class TokenController extends Controller
             {
                 $q->where('company_id', auth()->user()->company_id);
             })
+            ->where('created_at', '<=',today())
             ->where('status', '0')
             ->orderBy('is_vip', 'DESC')
             ->orderBy('id', 'ASC')
@@ -597,6 +599,7 @@ class TokenController extends Controller
         {
             $tokens = Token::where('status', '0')
             ->where('user_id', auth()->user()->id)
+            ->where('created_at', '<=', today())
             ->orderBy('is_vip', 'DESC')
             ->orderBy('id', 'ASC')
             ->get(); 

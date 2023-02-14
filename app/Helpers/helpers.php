@@ -9,7 +9,7 @@ function getCompanyDetails(string $userId)
     return $company;
 }
 
-function companyDetails(int $companyId)
+function companyDetails($companyId)
 {
     $company = \App\Models\Setting::where('company_id', $companyId)->first();
 

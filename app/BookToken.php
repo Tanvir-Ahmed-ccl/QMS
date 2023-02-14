@@ -1,16 +1,11 @@
 <?php
 
-namespace App\Models;
+namespace App;
 
 use Illuminate\Database\Eloquent\Model;
 
-class Token extends Model
+class BookToken extends Model
 {
-    protected $table = "token";
-    public $timestamps = false;
-    
-    
-
     public function department() 
     {
         return $this->hasOne('App\Models\Department', 'id', 'department_id');
@@ -34,10 +29,5 @@ class Token extends Model
     public function generated_by() 
     {
         return $this->hasOne('App\Models\User', 'id', 'created_by');
-    }
-
-    public function client()
-    {
-        return $this->hasOne('App\Models\User', 'mobile', 'client_mobile');
     }
 }

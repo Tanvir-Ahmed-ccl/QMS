@@ -15,16 +15,19 @@
         <div class="row">
             <div class="col text-center">
 
-                <div class="card">
+                <div class="card p-5">
                     <div class="card-body">
-                        <h3>{{companyDetails($token->company_id)->title}}</h3>
-                        <h1>{{$token->token_no}}</h1>
+                        <h4>{{companyDetails($token->company_id)->title}}</h4>
+                        <h1 class="my-3">{{$token->token_no}}</h1>
 
-                        <h5>Location: {{$token->department->name ?? ''}}</h5>
-                        <h5>Counter: {{$token->counter->name ?? ''}}</h5>
-                        <h5>Officer: {{$token->officer->firstname ?? '' . ' ', $token->officer->firstname ?? ''}}</h5>
-                        <h5>Name: {{$token->note ?? ''}}</h5>
-                        <h5>Date: {{date("Y-m-d H:i:s", strtotime($token->created_at))}}</h5>
+                        <p class="mb-3">{!!$data['serial']!!}</p>
+                        <h5 class="text-success">Aproximate waiting time: <span class="text-danger">{{$data['apx_time']}}</span> minutes</h5>
+
+                        <p class="m-0"><b>Location:</b> {{$token->department->name ?? ''}}</p>
+                        <p class="m-0"><b>Service:</b> {{$token->section->name ?? ''}}</p>
+                        <p class="m-0"><b>Counter:</b> {{$token->counter->name ?? ''}}</p>
+                        <p class="m-0"><b>Officer:</b> {{$token->officer->firstname . ' ' . $token->officer->lastname}}</p>
+                        <p class="m-0"><b>Date:</b> {{date("Y-m-d H:i:s", strtotime($token->created_at))}}</p>
                     </div>
                 </div>
 

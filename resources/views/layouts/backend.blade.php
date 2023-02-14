@@ -373,6 +373,10 @@
                                 <a href="{{ url('qrcode') }}" class="sf-star">QR CODE</a>
                             </li>
 
+                            <li class="{{ (Request::is('qrcode') ? 'active' : '') }}">
+                                <a href="{{ route('book.index') }}" class="sf-star">Book Apoinment</a>
+                            </li>
+
                             <li class="{{ ((Request::is('logout')) ? 'active' : '') }}">
                                 <a href="{{ url('logout') }}" class="sf-lock">
                                     {{ trans('app.signout') }}

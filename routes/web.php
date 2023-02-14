@@ -67,12 +67,20 @@ Route::get('clean', function () {
 });
 
 
+Route::get("ajax/load/section", 'AjaxController@section')->name('ajax.load.section');
 Route::get("ajax/load/counter", 'AjaxController@counter')->name('ajax.load.counter');
 Route::get("ajax/load/user", 'AjaxController@user')->name('ajax.load.user');
 Route::get("ajax/send/otp", 'AjaxController@sendOtp')->name('ajax.send.otp');
 Route::get("token/{id}", 'AjaxController@showSingleToken')->name('show.single.token');
 
 
+// book a token
+Route::get("book/token/{companyId}", 'TokenBookingController@showTokenBooking')->name('book.token.index');
+Route::post("book/token", 'TokenBookingController@storeBooking')->name('book.token.store');
+
+
+# book apoinment
+Route::get('admin/book','TokenBookingController@index')->name('book.index');
 # -----------------------------------------------------------
 # COMMON 
 # -----------------------------------------------------------

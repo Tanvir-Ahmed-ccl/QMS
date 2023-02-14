@@ -98,6 +98,8 @@ class FrontendController extends Controller
             }
             return view('guest.auto', compact('display', 'departmentList', 'keyList', 'company'));
         }
+
+        return redirect(route('home'));
     }
 
 

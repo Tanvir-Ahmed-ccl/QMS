@@ -34,7 +34,7 @@
             @if($display->sms_alert)
             <div class="form-group @error('client_mobile') has-error @enderror">
                 <label for="client_mobile">{{ trans('app.client_mobile') }} <i class="text-danger">*</i></label><br/>
-                <input type="tel" id="mobile" name="client_mobile" class="form-control" placeholder="{{ trans('app.client_mobile') }}"/>  
+                <input type="tel" value="+" id="mobile" name="client_mobile" class="form-control" placeholder="{{ trans('app.client_mobile') }}"/>  
                 <span class="text-danger">{{ $errors->first('client_mobile') }}</span>
                 <button class="btn-sm btn-primary" onclick="sendOTP(event)">Send OTP</button>
             </div>  
@@ -49,7 +49,7 @@
             <div class="form-group @error('department_id') has-error @enderror">
                 <label for="department_id">{{ trans('app.department') }} <i class="text-danger">*</i></label><br/>
                 <select name="department_id" class="form-control"
-                    onchange="loadCounter(this.value)"
+                    onchange="loadSection(this.value)"
                 >
                     <option value="">Select One</option>
                     @foreach ($departments as $key => $item)
@@ -57,6 +57,14 @@
                     @endforeach
                 </select>
                 <span class="text-danger">{{ $errors->first('department_id') }}</span>
+            </div> 
+
+            {{-- service --}}
+            <div class="form-group @error('section_id') has-error @enderror" id="ajax-section">
+                <label for="section_id">Service <i class="text-danger">*</i></label><br/>
+                <select name="section_id" class="form-control">
+                    <option value="">Select One</option>
+                </select>
             </div> 
 
             <div class="form-group @error('counter_id') has-error @enderror" id="ajax-counter">
@@ -150,7 +158,8 @@
                 phone:phone
             },
             success: function(res){
-                $("#otp-input").html('<label for="">Enter OTP</label><input type="number" name="otp" class="form-control" />');
+                $("#mobile").attr('readonly','readonly');
+                $("#otp-input").html('<label for="">Please check the phone and enter the OTP</label><input type="number" name="otp" class="form-control" />');
             }
         })
     }
@@ -166,6 +175,21 @@
             },
             success: function(res){
                 $("#ajax-counter").html(res);
+            }
+        })
+    }
+
+
+    function loadSection(key)
+    {
+        $.ajax({
+            url:"{{route('ajax.load.section')}}",
+            type: "GET",
+            data:{
+                key:key
+            },
+            success: function(res){
+                $("#ajax-section").html(res);
             }
         })
     }
@@ -256,6 +280,9 @@
             { 
                 $(".manualFrm").trigger('reset');
                 $("#output").html('').addClass('hide');
+                $("#mobile").removeAttr('readonly');
+
+                alert(data.message);
 
                 var content = "<style type=\"text/css\">@media print {"+
                     "html, body {display:block;margin:0!important; padding:0 !important;overflow:hidden;display:table;}"+
@@ -286,6 +313,7 @@
             } 
             else 
             {  
+                alert(data.exception)
                 $("#output").html(data.exception).removeClass('hide');
             }
         },
