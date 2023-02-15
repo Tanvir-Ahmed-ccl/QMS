@@ -124,6 +124,7 @@ function userAccessList()
         ],
         "display"   =>  1,
         "message"   =>  1,
+        "admin_dashboard"   =>  1,
         "setting"   =>  [
             'app_setting'   =>  1,
             'subsription'   =>  1,
@@ -148,7 +149,6 @@ function issetAccess($roleId)
         $roles = (object)json_decode($userRole->roles, true);
         else
         $roles = (object)userAccessList();
-
         return $roles;
     }
 }

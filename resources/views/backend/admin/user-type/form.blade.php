@@ -40,7 +40,7 @@
                 </div>
 
                 <div class="col-md-3" style="margin-bottom: 20px">
-                    <label style="margin-bottom: 10px">{{++$i}}. Section</label>
+                    <label style="margin-bottom: 10px">{{++$i}}. {{ trans('app.service') }}</label>
                     <div class="form-check form-check-inline" style="margin-left: 30px">
                         <input class="form-check-input" name="section_read" value="1" type="checkbox" id="section_read" {{ (issetAccess(Auth::user()->user_role_id)->section['read'] == 1) ? 'checked' : '' }}>
                         <label style="margin-left: 10px; font-weight:normal" for="section_read">Read</label>
@@ -199,8 +199,14 @@
                         <input class="form-check-input" name="message" value="1" type="checkbox" id="message" {{ (issetAccess(Auth::user()->user_role_id)->message == 1) ? 'checked' : '' }}>
                         <label style="margin-left: 10px; font-weight:normal" for="message">message</label>
                     </div>
+
+                    <div class="form-check form-check-inline" style="margin-left: 30px">
+                        <input class="form-check-input" name="message" value="1" type="checkbox" id="dashboard" {{ (issetAccess(Auth::user()->user_role_id)->admin_dashboard == 1) ? 'checked' : '' }}>
+                        <label style="margin-left: 10px; font-weight:normal" for="dashboard">Admin Dashboard</label>
+                    </div>
                     
                 </div>
+
             </div>
             <hr>
 

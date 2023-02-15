@@ -23,44 +23,27 @@
             <div class="col-12">
               <div class="card shadow">
                 <div class="card-header text-center bg-primary text-light">
-                  @if (!isset($token))
-                      <h2>{{$setting->title ?? ''}}</h2>
-                  @endif
+                  
                 </div>
 
-                @if(isset($token))
                 <div class="card-body text-center">
                     <h4>{{companyDetails($token->company_id)->title}}</h4>
                     <h1 class="my-3">{{$token->token_no}}</h1>
-                    <p class="m-0"><b>{{ trans('app.location') }}:</b> {{$token->department->name ?? ''}}</p>
+                    <p class="m-0"><b>{{ trans('app.department') }}:</b> {{$token->department->name ?? ''}}</p>
                     <p class="m-0"><b>{{ trans('app.service') }}:</b> {{$token->section->name ?? ''}}</p>
                     <p class="m-0"><b>{{ trans('app.counter') }}:</b> {{$token->counter->name ?? ''}}</p>
                     <p class="m-0"><b>{{ trans('app.officer') }}:</b> {{$token->officer->firstname . ' ' . $token->officer->lastname}}</p>
                     <p class="m-0"><b>Date:</b> {{date("Y-m-d H:i:s", strtotime($token->created_at))}}</p>
+                
+                
+                    @isset($tokenExists)
+                    <form action="{{route('change.appointment')}}" method="post">
+                      @csrf
+                      <input type="hidden" name="token_id" value="{{$token['id']}}">
+                      <button class="my-4">Change Time Shedule</button>
+                    </form>
+                    @endisset
                 </div>
-                @else
-
-                <div class="card-body" style="min-height: 60vh">
-                  <div class="row my-3">
-                    @foreach ($data as $key => $item)
-                      <div class="col-md">
-                          <form action="{{route('book.token.auth')}}" method="POST">
-                            @csrf
-                            <input type="hidden" name="department_id" value="{{$item['location']['department_id']}}">
-                            <input type="hidden" name="counter_id" value="{{$item['location']['counter_id']}}">
-                            <input type="hidden" name="user_id" value="{{$item['location']['user_id']}}">
-                            <input type="hidden" name="companyId" value="{{ $setting->company_id }}">
-                            
-                            <button type="submit" class="btn py-3 px-5 w-100" style="background-color:rgb(79, 79, 211); color:white">
-                              <b>{{$item['location']['name']}}</b>
-                            </button>
-
-                          </form>
-                      </div>
-                    @endforeach
-                  </div>
-                </div>
-                @endif
               </div>
             </div>
         </div>

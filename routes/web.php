@@ -77,10 +77,19 @@ Route::get("token/{id}", 'AjaxController@showSingleToken')->name('show.single.to
 // book a token
 Route::get("book/token/{companyId}", 'TokenBookingController@showTokenBooking')->name('book.token.index');
 Route::post("book/token", 'TokenBookingController@storeBooking')->name('book.token.store');
+Route::post("auth/book/token", 'TokenBookingController@showAuthPage')->name('book.token.auth');
+Route::post("auth/book/token/otp/send", 'TokenBookingController@sendOtpToPhone')->name('book.token.auth.otp');
+Route::post("auth/book/token/otp/check", 'TokenBookingController@checkOtp')->name('book.token.auth.otp.check');
+Route::post("change/appointment", 'TokenBookingController@editAppointment')->name('change.appointment');
+Route::post("update/appointment", 'TokenBookingController@updateAppointment')->name('book.token.update');
 
 
-# book apoinment
-Route::get('admin/book','TokenBookingController@index')->name('book.index');
+# book apoinment for admin panel
+Route::get('admin/book','Admin\TokenBookingController@index')->middleware('roles:admin')->name('book.index');
+Route::get("book/settings", 'Admin\TokenBookingController@showSetting')->middleware('roles:admin')->name('book.setting');
+Route::post("admin/book/settings", 'Admin\TokenBookingController@setting')->middleware('roles:admin')->name('book.setting.store');
+
+
 # -----------------------------------------------------------
 # COMMON 
 # -----------------------------------------------------------
@@ -168,6 +177,10 @@ Route::group(['middleware' => ['auth', 'checkSubscription', 'checkEmail']], func
 	    ->group(function() { 
 		# home
 		Route::get('/', 'HomeController@home');
+
+		# Addon
+		Route::get('addons', 'AddonController@index');
+		Route::post('addon/purchase', 'AddonController@purchase')->name('addon.purchase');
 
 		# user 
 		Route::get('user', 'UserController@index');
@@ -293,22 +306,7 @@ Route::group(['middleware' => ['auth', 'checkSubscription', 'checkEmail']], func
 		Route::post('token/print', 'TokenController@viewSingleToken');
 	});
 
-	# -----------------------------------------------------------
-	# CLIENT
-	# -----------------------------------------------------------
-	// Route::prefix('client')
-	//     ->namespace('Client')
-	//     ->middleware('roles:client')
-	//     ->group(function() { 
-	// 	# home
-	// 	Route::get('/', function(){
-	// 		echo "<pre>";
-	// 		echo "<a href='".url('logout')."'>Logout</a>";
-	// 		echo "<br/>";
-	// 		// print_r(auth()->user());
-	// 		return "Hello Client!";
-	// 	}); 
-	// });
+	
 });
 
 
@@ -330,6 +328,11 @@ Route::group(['middleware' => ['auth:owner']], function(){
 	Route::get('owner/slider/{key}/edit', 'Owner\SliderController@edit')->name('slider.edit');
 	Route::post('owner/slider/update', 'Owner\SliderController@update')->name('slider.update');
 	Route::get('owner/slider/{key}/destroy', 'Owner\SliderController@destroy')->name('slider.destroy');
+
+	// Sliders
+	Route::get('owner/addon', 'Owner\AddonController@index')->name('addon.index');
+	Route::get('owner/addon/{key}/edit', 'Owner\AddonController@edit')->name('addon.edit');
+	Route::post('owner/addon/update', 'Owner\AddonController@update')->name('addon.update');
 
 	Route::get('owner/dashboard', 'Owner\OwnerController@dashboard')->name('owner.dashboard');
 	Route::get('owner/stripe', 'Owner\OwnerController@stripe')->name('owner.stripe');

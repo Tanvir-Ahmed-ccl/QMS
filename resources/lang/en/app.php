@@ -56,13 +56,24 @@ return [
     'user_information'    => 'User Information',
     'profile_information' => 'Profile Information',
  
-    /*Department*/
+    /*location*/
     'department'        => 'Location',
     'add_department'    => 'Add Location',
     'department_list'   => 'Location List',
     'update_department' => 'Update Location',
     'description'       => 'Description',
     'key_for_keyboard_mode' => 'Key for Keyboard Mode',
+
+
+    /*service*/
+    'service'        => 'Service',
+    'service_name'        => 'Service Name',
+    'new_service'    => 'Add Service',
+    'service_list'   => 'Service List',
+    'update_service' => 'Update Service',
+
+    /*Appointment*/
+    'appointment'        => 'Appointment',
 
     /*Counter*/
     'counter'      => 'Counter',

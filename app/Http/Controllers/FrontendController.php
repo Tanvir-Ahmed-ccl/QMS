@@ -34,6 +34,9 @@ class FrontendController extends Controller
 
     public function guestLogin(Request $request)
     {
+        // return TokenBookingController::showTokenBooking($request->token);
+
+
         $token = $request->token;
 
         $query = User::query();
@@ -389,7 +392,7 @@ class FrontendController extends Controller
         if($rows->count() > 0)
         {
             $html = "<div class=\"form-group\">
-                <label for=\"key\">Select a Section <i class=\"text-danger\">*</i></label><br/>
+                <label for=\"key\">Select a ".trans('app.service')." <i class=\"text-danger\">*</i></label><br/>
                 <select name=\"section_id\" class=\"form-control\">";
 
             foreach($rows as $row)

@@ -3,7 +3,7 @@
 
 @section('content')
 
-    {{-- <div class="container my-5 pt-5">
+    <div class="container my-5 pt-5">
         <div class="row justify-content-center align-items-center" style="min-height: 80vh;">
             <div class="col-lg-6">
                 <h1>Next customer, please!</h1>
@@ -22,14 +22,34 @@
             <!-- col-lg-6 -->
 
 
-            <div class="col-lg-6 text-center">
-                <img src="{{ asset('frontend/img/boy-red.png') }}" alt="" class="img-fluid">
+            <div class="col-lg-6">
+                <div id="carouselExample" class="carousel slide" data-bs-ride="carousel">
+                    <div class="carousel-inner">
+                        @forelse (\App\Slider::get() as $key => $item)
+                        <div class="carousel-item {{($key == 0) ? 'active' : ''}}" data-bs-interval="3000">
+                        <img src="{{asset($item->image)}}" class="d-block w-100" alt="slider">
+                        </div>
+                        @empty
+                        <div class="carousel-item active">
+                        <img src="{{asset('d/sldier.jpg')}}" class="d-block w-100" alt="slider">
+                        </div>
+                        @endforelse
+                    </div>
+                    <button class="carousel-control-prev" type="button" data-bs-target="#carouselExample" data-bs-slide="prev">
+                        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                        <span class="visually-hidden">Previous</span>
+                    </button>
+                    <button class="carousel-control-next" type="button" data-bs-target="#carouselExample" data-bs-slide="next">
+                        <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                        <span class="visually-hidden">Next</span>
+                    </button>
+                </div>
             </div>
             <!-- col-lg-6 -->
         </div>
-    </div> --}}
+    </div>
 
-    <div class="container my-5 pt-5">
+    {{-- <div class="container my-5 pt-5">
         <div class="row justify-content-center align-items-center" style="min-height: 80vh;">
             <div class="col">
                 <div id="carouselExample" class="carousel slide" data-bs-ride="carousel">
@@ -55,7 +75,7 @@
                 </div>
             </div>
         </div>
-    </div>
+    </div> --}}
 
     <div class="container bg-dark">
         <div class="row justify-content-center align-items-center p-5">

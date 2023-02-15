@@ -385,7 +385,7 @@ class DisplayController extends Controller
                                 }
                                 if($key=='section')
                                 {
-                                    $html .=  "<h4 class=\"m-1\"><strong>".trans("Section")."</strong>: <span>$item</span></h4>";
+                                    $html .=  "<h4 class=\"m-1\"><strong>".trans("app.service")."</strong>: <span>$item</span></h4>";
                                 }
                                 if ($setting->show_officer == "1" && $key=='officer')
                                 {
@@ -583,7 +583,7 @@ class DisplayController extends Controller
                             }
                             if ($key=='section')
                             {
-                                $html .=  "<h4 class=\"m-1\"><strong>".trans("Section")."</strong>: <span>$item</span></h4>";
+                                $html .=  "<h4 class=\"m-1\"><strong>".trans("app.service")."</strong>: <span>$item</span></h4>";
                             }
                             if ($setting->show_officer == "1" && $key=='officer')
                             {

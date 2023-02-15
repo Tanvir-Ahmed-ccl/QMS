@@ -28,7 +28,6 @@ class UserTypeController extends Controller
 	}
 
 
-
     public function showForm()
     {   
         if(issetAccess(Auth::user()->user_role_id)->user_type['write'] == false) // Unless the user has access
@@ -109,6 +108,7 @@ class UserTypeController extends Controller
                     ],
                     "display"   =>  $request->display ?? 0,
                     "message"   =>  $request->message ?? 0,
+                    "admin_dashboard"   =>  $request->admin_dashboard ?? 0,
                     "setting"   =>  [
                         'app_setting'   =>  $request->setting_app_setting ?? 0,
                         'subsription'   =>  $request->setting_subsription ?? 0,
@@ -253,6 +253,7 @@ class UserTypeController extends Controller
                     ],
                     "display"   =>  $request->display ?? 0,
                     "message"   =>  $request->message ?? 0,
+                    "admin_dashboard"   =>  $request->admin_dashboard ?? 0,
                     "setting"   =>  [
                         'app_setting'   =>  $request->setting_app_setting ?? 0,
                         'subsription'   =>  $request->setting_subsription ?? 0,

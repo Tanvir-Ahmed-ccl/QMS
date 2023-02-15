@@ -7,7 +7,7 @@
     <div class="panel-heading">
         <div class="row">
             <div class="col-sm-12 text-left">
-                <h3>{{ trans('New Section') }}</h3>
+                <h3>{{ trans('app.new_service') }}</h3>
             </div> 
         </div>
     </div>
@@ -18,7 +18,7 @@
      
             <div class="form-group @error('name') has-error @enderror">
                 <label for="name">{{ trans('Name') }} <i class="text-danger">*</i></label>
-                <input type="text" name="name" id="name" class="form-control" placeholder="{{ trans('Section Name') }}" value="{{ old('name') }}">
+                <input type="text" name="name" id="name" class="form-control" placeholder="{{ trans('app.service_name') }}" value="{{ old('name') }}">
                 <span class="text-danger">{{ $errors->first('name') }}</span>
             </div>
             

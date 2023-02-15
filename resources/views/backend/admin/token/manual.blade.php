@@ -29,22 +29,33 @@
 
         <div id="output" class="hide alert alert-danger alert-dismissible fade in shadowed mb-1"></div>
 
-        {{ Form::open(['url' => 'admin/token/create', 'class'=>'manualFrm mt-1  col-md-7 col-sm-8']) }}
-
+        
+        <div id="otp-form">
             @if($display->sms_alert)
             <div class="form-group @error('client_mobile') has-error @enderror">
                 <label for="client_mobile">{{ trans('app.client_mobile') }} <i class="text-danger">*</i></label><br/>
-                <input type="tel" value="+" id="mobile" name="client_mobile" class="form-control" placeholder="{{ trans('app.client_mobile') }}"/>  
+                <input type="tel" value="+" id="mobile" name="client_mobile" class="form-control"
+                    onclick="validatingPhoneNumber(this.value)"
+                    onkeyup="validatingPhoneNumber(this.value)"
+                />  
                 <span class="text-danger">{{ $errors->first('client_mobile') }}</span>
-                <button class="btn-sm btn-primary" onclick="sendOTP(event)">Send OTP</button>
+                <button class="btn-sm btn-primary" id="send-otp-btn" onclick="sendOTP(event)" disabled>Send OTP</button>
             </div>  
             
             <div class="form-group @error('otp') has-error @enderror" id="otp-input">
                 
             </div>  
+
+            <div id="otp-resp-msg" class="text-danger"></div>
             
             @endif
+        </div>
 
+            <div id="after-otp" style="display: none">
+
+            {{ Form::open(['url' => 'admin/token/create', 'class'=>'manualFrm mt-1  col-md-7 col-sm-8']) }}
+            <input type="hidden" id="success_mobile" name="client_mobile" > 
+                
             {{-- Location --}}
             <div class="form-group @error('department_id') has-error @enderror">
                 <label for="department_id">{{ trans('app.department') }} <i class="text-danger">*</i></label><br/>
@@ -92,7 +103,7 @@
 
             @if($display->show_note)
             <div class="form-group @error('note') has-error @enderror">
-                <label for="note">{{ trans('app.note') }} <i class="text-danger">*</i></label> 
+                <label for="note">Name Of Customer <i class="text-danger">*</i></label> 
                 <textarea name="note" id="note" class="form-control"  placeholder="{{ trans('app.note') }}">{{ old('note') }}</textarea>
                 <span class="text-danger">{{ $errors->first('note') }}</span> 
             </div>
@@ -108,8 +119,11 @@
                 <button class="button btn btn-info" type="reset"><span>Reset</span></button>
                 <button class="button btn btn-success" type="submit"><span>Submit</span></button>
             </div>
+            {{ Form::close() }}
+            </div>
+
       
-        {{ Form::close() }}
+        
     </div> 
 </div>  
 
@@ -145,6 +159,15 @@
 <script src="{{ asset('intelInput/script.min.js') }}"></script>
 
 <script>
+    function validatingPhoneNumber(phone)
+    {
+        if(phone.length > 6)
+        {
+            console.log(phone.length);
+            $("#send-otp-btn").removeAttr('disabled')
+        }
+    }
+
 
     function sendOTP(e)
     {
@@ -157,13 +180,49 @@
             data:{
                 phone:phone
             },
+            beforeSend: () => {
+                $("#send-otp-btn").html('Sending...');
+            },
             success: function(res){
                 $("#mobile").attr('readonly','readonly');
-                $("#otp-input").html('<label for="">Please check the phone and enter the OTP</label><input type="number" name="otp" class="form-control" />');
+                $("#send-otp-btn").html('Resend OTP');
+                $("#otp-input").html('<label for="">Please check the phone and enter the OTP</label><input type="number" name="otp" id="otp" class="form-control" /> <button id="check-otp" onclick="checkOTP(event)">Submit</button>');
             }
         })
     }
 
+
+    function checkOTP(e)
+    {
+        e.preventDefault();
+        let phone = $("#mobile").val();
+        let otp = $("#otp").val();
+
+        $.ajax({
+            url:"{{route('ajax.send.otp')}}",
+            type: "GET",
+            data:{
+                phone:phone,
+                otp:otp
+            },
+            beforeSend: () => {
+                $("#check-otp").html('Checking...');
+            },
+            success: function(res){
+                if(res.success == 1)
+                {
+                    $("#otp-form").hide();
+                    $("#after-otp").css("display", "block");
+                    $("#success_mobile").val(phone)
+                }
+                else
+                {
+                    $("#check-otp").html('Submit');
+                    $("#otp-resp-msg").html(`<b>${res.message}</b>`);
+                }
+            }
+        })
+    }
 
     function loadCounter(key)
     {

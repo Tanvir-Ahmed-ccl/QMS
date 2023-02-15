@@ -13,6 +13,8 @@ class HomeController extends Controller
 
     public function home()
     { 
+        // return redirect(route())
+
         @date_default_timezone_set(session('app.timezone'));
         
         $month = $this->chart_month();

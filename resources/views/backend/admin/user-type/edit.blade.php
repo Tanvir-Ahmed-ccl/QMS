@@ -43,7 +43,7 @@
                 </div>
 
                 <div class="col-md-3" style="margin-bottom: 20px">
-                    <label style="margin-bottom: 10px">{{++$i}}. Section</label>
+                    <label style="margin-bottom: 10px">{{++$i}}. {{ trans('app.service') }}</label>
                     <div class="form-check form-check-inline" style="margin-left: 30px">
                         <input class="form-check-input" name="section_read" value="1" type="checkbox" id="section_read" {{ (issetAccess($userType->id)->section['read'] == 1) ? 'checked' : '' }}>
                         <label style="margin-left: 10px; font-weight:normal" for="section_read">Read</label>
@@ -191,6 +191,11 @@
                     <div class="form-check form-check-inline" style="margin-left: 30px">
                         <input class="form-check-input" name="message" value="1" type="checkbox" id="message" {{ (issetAccess($userType->id)->message == 1) ? 'checked' : '' }}>
                         <label style="margin-left: 10px; font-weight:normal" for="message">message</label>
+                    </div>
+
+                    <div class="form-check form-check-inline" style="margin-left: 30px">
+                        <input class="form-check-input" name="admin_dashboard" value="1" type="checkbox" id="dashboard" @if(isset(issetAccess($userType->id)->admin_dashboard)){{ (issetAccess($userType->id)->admin_dashboard == 1) ? 'checked' : '' }}@endif>
+                        <label style="margin-left: 10px; font-weight:normal" for="dashboard">Admin Dashboard</label>
                     </div>
                     
                 </div>

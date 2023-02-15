@@ -159,7 +159,7 @@ class LoginController extends Controller
                         )); 
                     }
                     
-                    return redirect(strtolower(auth()->user()->role()));
+                    return redirect(url('admin'));
                 }
 
             }

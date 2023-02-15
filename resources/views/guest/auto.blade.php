@@ -331,7 +331,7 @@
                     content += "<li><p id=\"token-headr\"><strong class=\"text-success h3\" id=\"token-serial\">"+data.serial+"</strong> person left</p></li>";
                     content += "<li><p><strong class=\"text-success h4\">Approximate waiting time: <b> <span class=\"text-danger\" id=\"apx_time\">"+data.tokenInfo.aprx_time+"</span> </b> minutes</strong></p></li>";
                     content += "<li><strong>{{ trans('app.department') }} </strong>"+data.token.department+"</li>";
-                    content += "<li><strong>{{ trans('Section') }} </strong>"+data.tokenInfo.section+"</li>";
+                    content += "<li><strong>{{ trans('app.service') }} </strong>"+data.tokenInfo.section+"</li>";
                     content += "<li><strong>{{ trans('app.counter') }} </strong>"+data.token.counter+"</li>";
                     content += "<li><strong>{{ trans('app.officer') }} </strong>"+data.token.firstname+' '+data.token.lastname+"</li>";
                     content += "<li><strong>{{ trans('app.date') }} </strong>"+data.token.created_at+"</li>";

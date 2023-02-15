@@ -49,6 +49,11 @@
                         <i class="menu-icon fa fa-cog"></i>Sliders
                     </a>
                 </li>
+                <li class="{{ (request()->segment(2) == 'addon') ? 'active' : '' }}">
+                    <a href="{{ route('addon.index') }}">
+                        <i class="menu-icon fa fa-cog"></i>Addons
+                    </a>
+                </li>
                 {{-- <li class="{{ (request()->segment(2) == 'about') ? 'active' : '' }}">
                     <a href="{{ route('owner.app.about') }}">
                         <i class="menu-icon fa fa-building-o"></i>About

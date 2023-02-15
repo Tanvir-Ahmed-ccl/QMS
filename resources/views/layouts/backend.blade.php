@@ -96,17 +96,17 @@
                             {{-- Section --}}
                             @if(issetAccess(auth()->user()->user_role_id)->section['read'] || issetAccess(auth()->user()->user_role_id)->section['write'])
                             <li class="cm-submenu {{ (Request::segment(2)=='section' ? 'open' : '') }}">
-                                <a class="sf-carton">{{ trans('Section') }} <span class="caret"></span></a>
+                                <a class="sf-carton">{{ trans('app.service') }} <span class="caret"></span></a>
                                 <ul>
                                     @if (issetAccess(auth()->user()->user_role_id)->section['write'])
                                     <li class="{{ (Request::is('admin/section/create') ? 'active' : '') }}">
-                                        <a href="{{ url('admin/section/create') }}">{{ trans('Add Section') }}</a>
+                                        <a href="{{ url('admin/section/create') }}">{{ trans('app.new_service') }}</a>
                                     </li>
                                     @endif
 
                                     @if (issetAccess(auth()->user()->user_role_id)->section['read'])
                                     <li class="{{ (Request::is('admin/section') ? 'active' : '') }}">
-                                        <a href="{{ url('admin/section') }}">{{ trans('Section List') }}</a>
+                                        <a href="{{ url('admin/section') }}">{{ trans('app.service_list') }}</a>
                                     </li>
                                     @endif
                                 </ul>
@@ -366,16 +366,28 @@
                                         <a href="{{ url('common/setting/profile') }}">{{ trans('app.profile_information') }}</a>
                                     </li>
                                     @endif
+
+                                    @if(issetAccess(auth()->user()->user_role_id)->setting['subsription'])
+                                    <li class="{{ (Request::is('admin/addons/*') ? 'active' : '') }}">
+                                        <a href="{{ url('admin/addons') }}">Addons</a>
+                                    </li>
+                                    @endif
                                 </ul>
                             </li>
                             
+                            
+
+                            @if(\App\AddonUsesHistory::where('user_id', companyOwner(Auth::id())->id)->where('addon_id', 2)->exists())
                             <li class="{{ (Request::is('qrcode') ? 'active' : '') }}">
                                 <a href="{{ url('qrcode') }}" class="sf-star">QR CODE</a>
                             </li>
+                            @endif
 
+                            @if(\App\AddonUsesHistory::where('user_id', companyOwner(Auth::id())->id)->where('addon_id', 1)->exists())
                             <li class="{{ (Request::is('qrcode') ? 'active' : '') }}">
                                 <a href="{{ route('book.index') }}" class="sf-star">Book Apoinment</a>
                             </li>
+                            @endif
 
                             <li class="{{ ((Request::is('logout')) ? 'active' : '') }}">
                                 <a href="{{ url('logout') }}" class="sf-lock">

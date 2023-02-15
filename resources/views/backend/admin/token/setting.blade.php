@@ -24,7 +24,7 @@
                 </div> 
 
                 <div class="form-group @error('section_id') has-error @enderror">
-                    <label for="section_id">{{ trans('Section') }} <i class="text-danger">*</i></label><br/>
+                    <label for="section_id">{{ trans('app.service') }} <i class="text-danger">*</i></label><br/>
                     {{ Form::select('section_id', $sections, null, ['placeholder' => 'Select Option', 'class'=>'select2 form-control']) }}<br/>
                     <span class="text-danger">{{ $errors->first('section_id') }}</span>
                 </div> 
@@ -56,7 +56,7 @@
                     <tr>
                         <th>#</th> 
                         <th>{{ trans('app.department') }}</th>
-                        <th>{{ trans('Section') }}</th>
+                        <th>{{ trans('app.service') }}</th>
                         <th>{{ trans('app.counter') }}</th>
                         <th>{{ trans('app.officer') }}</th> 
                         <th>{{ trans('app.action') }}</th>

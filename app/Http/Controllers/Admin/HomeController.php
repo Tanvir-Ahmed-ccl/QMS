@@ -3,19 +3,13 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use DB;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class HomeController extends Controller
 {
     public function home()
     { 
-        if(Auth::user()->user_type !== 5) // if user is not admin
-        {
-            return redirect(url('officer'));
-        }
-
-
         @date_default_timezone_set(session('app.timezone'));
         
         $infobox = $this->infobox();
@@ -23,13 +17,32 @@ class HomeController extends Controller
         $month = $this->chart_month();
         $year = $this->chart_year();
         $begin = $this->chart_begin();
+
+        if(Auth::user()->user_type !== 5) // if user is not admin
+        {
+            if(isset(issetAccess(Auth::user()->user_role_id)->admin_dashboard) && issetAccess(Auth::user()->user_role_id)->admin_dashboard == 1)
+            {
+                return view('backend.admin.home.home', compact(
+                    'infobox', 
+                    'performance', 
+                    'month', 
+                    'year', 
+                    'begin'
+                ));
+            }
+            else
+            {
+                return redirect(url('officer'));
+            }            
+        }
+
         return view('backend.admin.home.home', compact(
-            'infobox', 
-            'performance', 
-            'month', 
-            'year', 
-            'begin'
-        ));
+                    'infobox', 
+                    'performance', 
+                    'month', 
+                    'year', 
+                    'begin'
+                ));
     }
 
     public function infobox()

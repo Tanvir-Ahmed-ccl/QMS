@@ -518,58 +518,48 @@ class TokenController extends Controller
         } 
         else 
         { 
+            $newTokenNo = (new Token_lib)->newToken($request->department_id, $request->counter_id, $request->is_vip);
 
-            if(DB::table("otps")->where(['phone' => $request->client_mobile, 'otp' => $request->otp])->exists())
-            {
-                DB::table("otps")->where(['phone' => $request->client_mobile, 'otp' => $request->otp])->delete();
+            $save = Token::insert([
+                'company_id'    => auth()->user()->company_id,
+                'token_no'      => $newTokenNo,
+                'client_mobile' => $request->client_mobile,
+                'department_id' => $request->department_id,
+                'section_id' => $request->section_id,
+                'counter_id'    => $request->counter_id, 
+                'user_id'       => $request->user_id, 
+                'note'          => $request->note, 
+                'created_at'    => now(),
+                'created_by'    => auth()->user()->id,
+                'updated_at'    => null,
+                'is_vip'        => $request->is_vip,
+                'status'        => 0 
+            ]);
 
-                $newTokenNo = (new Token_lib)->newToken($request->department_id, $request->counter_id, $request->is_vip);
+            if ($save) { 
+                $token = Token::select(
+                    'token.*', 
+                    'department.name as department', 
+                    'counter.name as counter', 
+                    'user.firstname', 
+                    'user.lastname'
+                )
+                ->leftJoin('department', 'token.department_id', '=', 'department.id')
+                ->leftJoin('counter', 'token.counter_id', '=', 'counter.id')
+                ->leftJoin('user', 'token.user_id', '=', 'user.id')
+                ->whereDate('token.created_at', date("Y-m-d"))
+                ->where('token.token_no', $newTokenNo)
+                ->first(); 
 
-                $save = Token::insert([
-                    'company_id'    => auth()->user()->company_id,
-                    'token_no'      => $newTokenNo,
-                    'client_mobile' => $request->client_mobile,
-                    'department_id' => $request->department_id,
-                    'section_id' => $request->section_id,
-                    'counter_id'    => $request->counter_id, 
-                    'user_id'       => $request->user_id, 
-                    'note'          => $request->note, 
-                    'created_at'    => now(),
-                    'created_by'    => auth()->user()->id,
-                    'updated_at'    => null,
-                    'is_vip'        => $request->is_vip,
-                    'status'        => 0 
-                ]);
-
-                if ($save) { 
-                    $token = Token::select(
-                        'token.*', 
-                        'department.name as department', 
-                        'counter.name as counter', 
-                        'user.firstname', 
-                        'user.lastname'
-                    )
-                    ->leftJoin('department', 'token.department_id', '=', 'department.id')
-                    ->leftJoin('counter', 'token.counter_id', '=', 'counter.id')
-                    ->leftJoin('user', 'token.user_id', '=', 'user.id')
-                    ->whereDate('token.created_at', date("Y-m-d"))
-                    ->where('token.token_no', $newTokenNo)
-                    ->first(); 
-
-                    $data['status'] = true;
-                    $data['sms'] = sendSMSByTwilio($request->client_mobile, "Click here to get your token " . route('show.single.token', $token->id));
-                    $data['message'] = trans('app.token_generate_successfully');
-                    $data['token']  = $token;
-                } else {
-                    $data['status'] = false;
-                    $data['exception'] = trans('app.please_try_again');
-                }
-            }
-            else 
-            {
+                $data['status'] = true;
+                $data['sms'] = sendSMSByTwilio($request->client_mobile, "Click here to get your token " . route('show.single.token', $token->id));
+                $data['message'] = trans('app.token_generate_successfully');
+                $data['token']  = $token;
+            } else {
                 $data['status'] = false;
-                $data['exception'] = "OTP Not Matched";
+                $data['exception'] = trans('app.please_try_again');
             }
+            
 
         }
         return response()->json($data);
@@ -589,7 +579,7 @@ class TokenController extends Controller
             {
                 $q->where('company_id', auth()->user()->company_id);
             })
-            ->where('created_at', '<=',today())
+            ->where('created_at', '<=',date("Y-m-d H:i:s"))
             ->where('status', '0')
             ->orderBy('is_vip', 'DESC')
             ->orderBy('id', 'ASC')
@@ -599,7 +589,7 @@ class TokenController extends Controller
         {
             $tokens = Token::where('status', '0')
             ->where('user_id', auth()->user()->id)
-            ->where('created_at', '<=', today())
+            ->where('created_at', '<=', date("Y-m-d H:i:s"))
             ->orderBy('is_vip', 'DESC')
             ->orderBy('id', 'ASC')
             ->get(); 

@@ -19,7 +19,7 @@
                     <th>#</th>
                     <th>{{ trans('app.token_no') }}</th>
                     <th>{{ trans('app.department') }}</th>
-                    <th>{{ trans('Section') }}</th>
+                    <th>{{ trans('app.service') }}</th>
                     <th>{{ trans('app.counter') }}</th>
                     <th>{{ trans('app.officer') }}</th>
                     <th>{{ trans('app.client_mobile') }}</th>

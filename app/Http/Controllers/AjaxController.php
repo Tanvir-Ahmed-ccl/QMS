@@ -83,6 +83,27 @@ class AjaxController extends Controller
         $otp = rand(100000, 999999);
         $phone = $request->phone;
 
+
+        if($request->has('phone') && $request->has('otp'))
+        {
+            if(DB::table("otps")->where(['phone' => $request->phone, 'otp' => $request->otp])->exists())
+            {
+                DB::table("otps")->where(['phone' => $request->phone, 'otp' => $request->otp])->delete();
+
+                return response()
+                ->json([
+                    'success' =>    1,
+                    'message'   =>  "OTP Matched Successfully",
+                ]); 
+            }
+
+            return response()
+                ->json([
+                    'success' =>    0,
+                    'message'   =>  "OTP Not Matched",
+                ]);
+        }
+
         $table = DB::table("otps")->where('phone', $phone);
 
         if($table->exists())
