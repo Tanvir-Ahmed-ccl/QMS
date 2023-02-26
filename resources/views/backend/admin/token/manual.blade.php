@@ -33,12 +33,13 @@
         <div id="otp-form">
             @if($display->sms_alert)
             <div class="form-group @error('client_mobile') has-error @enderror">
-                <label for="client_mobile">{{ trans('app.client_mobile') }} <i class="text-danger">*</i></label><br/>
-                <input type="tel" value="+" id="mobile" name="client_mobile" class="form-control"
+                <label for="client_mobile">{{ trans('app.client_mobile') }} <i class="text-danger">*</i></label> (<span class="text-info">Ex: {{companyDetails(Auth::user()->company_id)->example_phone}}</span>)<br/>
+                <input type="tel" value="{{defaultCountryCode(Auth::id())}}" id="mobile" name="client_mobile" class="form-control"
                     onclick="validatingPhoneNumber(this.value)"
                     onkeyup="validatingPhoneNumber(this.value)"
-                />  
+                />
                 <span class="text-danger">{{ $errors->first('client_mobile') }}</span>
+                <br>
                 <button class="btn-sm btn-primary" id="send-otp-btn" onclick="sendOTP(event)" disabled>Send OTP</button>
             </div>  
             
@@ -340,7 +341,10 @@
                 $(".manualFrm").trigger('reset');
                 $("#output").html('').addClass('hide');
                 $("#mobile").removeAttr('readonly');
-
+				$("#after-otp").css("display", "none");				
+				$("#mobile").val("+");
+				$("#otp-input").html("");
+				$("#otp-form").show();
                 alert(data.message);
 
                 var content = "<style type=\"text/css\">@media print {"+

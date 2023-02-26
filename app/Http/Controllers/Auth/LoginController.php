@@ -86,7 +86,7 @@ class LoginController extends Controller
                 $otp = rand(100000, 999999);
                 $email = $request->email;
                 $password = $request->password;
-                User::find($authUser->id)->update(['otp'=>$otp]);
+                User::find($authUser->id)->update(['otp'=>$otp, 'otp_send_at' => now()]);
                 $phone = $authUser->mobile;
 
                 Auth::logout();
@@ -123,54 +123,55 @@ class LoginController extends Controller
 
     public function checkOtpAndLogin(Request $request)
     {
-
+        // return $request;
         $email = $request->email;
         $password = $request->password;
-        $user = User::where(['email' => $email]);
+        $otp = $request->otp;
 
-        if($user->exists())
+        if (Auth::attempt(['email'=>$email, 'password'=>$password, 'otp'=>$otp]))
         {
-            $otp = $user->first()->otp;
+            $authUser = Auth::user();
 
-            if($request->otp == $otp)
+            $expiredAt = \Carbon\Carbon::parse($authUser->otp_send_at)->addMinutes(2);
+
+            if($expiredAt < now())
             {
-                $user->update(['otp'=>null, 'email_verified_at' => now()]);
-            
-                if (Auth::attempt(['email'=>$request->email, 'password'=>$request->password])) {
-
-                    $authUser = Auth::user();            
-
-                    $app = Setting::where('company_id', $authUser->company_id)->first(); 
-                    $customDisplays = DisplayCustom::where('company_id', $authUser->company_id)->where('status', 1)->orderBy('name', 'ASC')->pluck('name', 'id');
-                    if (!empty($customDisplays))
-                    {
-                        Session::put('custom_displays', $customDisplays); 
-                    }
-
-                    if(!empty($app))
-                    {
-                        Session::put('app', array(
-                            'title'   => $app->title, 
-                            'favicon' => $app->favicon, 
-                            'logo'    => $app->logo, 
-                            'timezone' => $app->timezone, 
-                            // 'display'  => !empty($display->display)?$display->display:2, 
-                            'copyright_text' => $app->copyright_text, 
-                        )); 
-                    }
-                    
-                    return redirect(url('admin'));
-                }
-
-            }
-            else
-            {
-                $msg = 'Otp Not Matched. Please enter valid OTP';
+                Auth::logout();
+                $msg = "OTP Expired";
                 return view('auth.login')->with(compact('email', 'password', 'msg'));
             }
+
+
+            try{
+                $app = Setting::where('company_id', $authUser->company_id)->first(); 
+                $customDisplays = DisplayCustom::where('company_id', $authUser->company_id)->where('status', 1)->orderBy('name', 'ASC')->pluck('name', 'id');
+                
+                if (!empty($customDisplays))
+                {
+                    Session::put('custom_displays', $customDisplays); 
+                }
+
+                if(!empty($app))
+                {
+                    Session::put('app', array(
+                        'title'   => $app->title, 
+                        'favicon' => $app->favicon, 
+                        'logo'    => $app->logo, 
+                        'timezone' => $app->timezone, 
+                        // 'display'  => !empty($display->display)?$display->display:2, 
+                        'copyright_text' => $app->copyright_text, 
+                    )); 
+                }
+            }
+            catch(Exception $e)
+            {
+                return $e->getMessage();
+            }
+            
+            return redirect(url("/admin"));
         }
 
-        $msg = 'Unauthorized request';
+        $msg = 'Otp Not Matched. Please enter valid OTP';
         return view('auth.login')->with(compact('email', 'password', 'msg'));
     }
 
@@ -183,7 +184,7 @@ class LoginController extends Controller
 
         $user = User::where(['email' => $email]);
         $phone = $user->first()->mobile;
-        $user->update(['otp'=>$otp]);
+        $user->update(['otp'=>$otp, 'otp_send_at'=>now()]);
         $msg = "A One Time Passcode has been resent to your email and phone number. Please enter the OTP below to verify.";
 
         try{

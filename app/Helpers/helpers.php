@@ -1,5 +1,7 @@
 <?php
 
+use Illuminate\Support\Facades\Auth;
+
 function getCompanyDetails(string $userId)
 {
     $user = \App\Models\User::find($userId);
@@ -16,6 +18,13 @@ function companyDetails($companyId)
     return $company;
 }
 
+function companyToken($companyId)
+{
+    $company = \App\Models\User::find($companyId);
+
+    return $company->token ?? '1234';
+}
+
 
 function companyOwner(string $userId)
 {
@@ -24,6 +33,15 @@ function companyOwner(string $userId)
     $company = \App\Models\User::find($user->company_id);
 
     return $company;
+}
+
+function defaultCountryCode($userId)
+{
+    $user = \App\Models\User::find($userId);
+
+    $company = \App\Models\Setting::where('company_id', $user->company_id)->first();
+
+    return $company->country_code;
 }
 
 

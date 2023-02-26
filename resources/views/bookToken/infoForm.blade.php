@@ -54,13 +54,34 @@
                           <div class="col-md">
                             <div class="form-group mb-3">
                               <label for="">Select Date</label>
-                                <input name="date" type="date" class="form-control" value="{{date('Y-m-d', strtotime($token->created_at))}}" required>
+                                <input name="date" type="date" class="form-control" value="{{date('Y-m-d', strtotime($token->created_at))}}" required
+                                  
+                                />
                             </div>
                           </div>
                           <div class="col-md">
                             <div class="form-group mb-3">
                               <label for="">Select Time</label>
-                                <input name="time" type="time" class="form-control" value="{{date('H:i', strtotime($token->created_at))}}" required>
+                              @php 
+                                $openTime = date("H:i", strtotime(companyDetails($data['companyId'])->opening_time));
+                                $closeTime = companyDetails($data['companyId'])->closing_time;
+                              @endphp
+                              <select name="time" class="form-select">
+                                <option value="" selected disabled>Select One</option>
+                                @for ($i=1; $i<1000000; $i++)
+
+                                  @if($openTime >= $closeTime)
+                                    @break
+                                  @endif
+                                  
+                                  <option value="{{$openTime}}"> {{$openTime}} </option>
+
+                                  @php
+                                  $openTime = \Carbon\Carbon::parse($openTime)->addMinutes(5)->format("H:i");
+                                  @endphp
+                                @endfor
+                              </select>
+                              {{-- <input name="time" type="time" class="form-control" value="{{date('H:i', strtotime($token->created_at))}}" required> --}}
                             </div>
                           </div>
                         </div>
@@ -105,7 +126,7 @@
                         
                         <div class="form-group mb-3">
                           <label for=""><b>Select a {{ trans('app.service') }}</b></label>
-                          <select name="section_id" class="form-control" required>
+                          <select name="section_id" id="section_id" class="form-control" required>
                             <option value="">Select One</option>
                             @foreach ($sections as $section)
                               <option value="{{$section['id']}}" @isset($data['section_id']) {{ ($data['section_id'] == $section->id) ? 'selected' : '' }} @endisset>{{$section['name']}}</option>
@@ -120,15 +141,16 @@
                               <label for="">Select Date</label>
                                 <input name="date" type="date" class="form-control" required
                                   @isset($data['date']) value="{{$data['date']}}" @endisset
+                                  onchange="getAvailableSchedule(this.value)"
                                 >
                             </div>
                           </div>
                           <div class="col-md">
-                            <div class="form-group mb-3">
+                            <div class="form-group mb-3" id="show-available-time">
                               <label for="">Select Time</label>
-                                <input name="time" type="time" class="form-control" required
-                                  @isset($data['time']) value="{{$data['time']}}" @endisset
-                                >
+                              <input name="time" type="time" class="form-control" required disabled
+                                @isset($data['time']) value="{{$data['time']}}" @endisset
+                              >
                             </div>
                           </div>
                         </div>
@@ -176,6 +198,33 @@
     <script src="{{ asset('intelInput/jquery.min.js') }}"></script>
     <script src="{{ asset('intelInput/script.min.js') }}"></script>
     <script>
+
+        function getAvailableSchedule(selectedDate)
+        {
+          let sectionId = $("#section_id").val();
+
+          $.ajax({
+            url: "{{route('ajax.getAvailableTime')}}",
+            type:"post",
+            data: {
+              "_token": "{{csrf_token()}}",
+              "selectedDate": selectedDate,
+              "companyId": "{{$data['companyId']}}",
+              "departmentId": "{{$data['department_id']}}",
+              "sectionId": sectionId
+            },
+            beforeSend: () => {
+
+            },
+            success: (resp) => {
+              $("#show-available-time").html(resp);
+            },
+            error: (error) => {
+              console.log(error);
+            }
+
+          })
+        }
 
         function validatingPhoneNumber(phone, key)
         {

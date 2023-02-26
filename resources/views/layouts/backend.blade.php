@@ -116,7 +116,7 @@
                             {{-- Counter --}}
                             @if(issetAccess(auth()->user()->user_role_id)->counter['read'] || issetAccess(auth()->user()->user_role_id)->counter['write'])
                             <li class="cm-submenu {{ (Request::segment(2)=='counter' ? 'open' : '') }}">
-                                <a class="sf-star">{{ trans('app.counter') }} <span class="caret"></span></a>
+                                <a class="sf-carton">{{ trans('app.counter') }} <span class="caret"></span></a>
                                 <ul>
                                     @if(issetAccess(auth()->user()->user_role_id)->counter['write'])
                                     <li class="{{ (Request::is('admin/counter/create') ? 'active' : '') }}">
@@ -206,6 +206,12 @@
                                     </li>
                                     @endif
 
+                                    @if(issetAccess(auth()->user()->user_role_id)->token['auto_token_setting'])
+                                    <li class="bg-danger {{ (Request::is('admin/token/setting') ? 'active' : '') }}">
+                                        <a href="{{ url('admin/token/setting') }}">{{ trans('app.auto_token_setting') }}</a>
+                                    </li>
+                                    @endif
+
                                     @if(issetAccess(auth()->user()->user_role_id)->token['manual_token'])
                                     <li class="{{ (Request::is('admin/token/create') ? 'active' : '') }}">
                                         <a href="{{ url('admin/token/create') }}">{{ trans('app.manual_token') }}</a>
@@ -229,12 +235,7 @@
                                         <a href="{{ url('admin/token/performance') }}">{{ trans('app.performance_report') }}</a>
                                     </li> 
                                     @endif
-
-                                    @if(issetAccess(auth()->user()->user_role_id)->token['auto_token_setting'])
-                                    <li class="bg-danger {{ (Request::is('admin/token/setting') ? 'active' : '') }}">
-                                        <a href="{{ url('admin/token/setting') }}">{{ trans('app.auto_token_setting') }}</a>
-                                    </li>
-                                    @endif
+                                    
                                 </ul>
                             </li>  
                             {{-- @endif --}}

@@ -45,76 +45,76 @@
 <div class="modal fade" tabindex="-1" id="tokenModal" role="dialog">
   <div class="modal-dialog" role="document">
     <div class="modal-content">
-      {{ Form::open(['url' => 'guest/token', 'class' => 'AutoFrm']) }} 
       <div class="modal-header">
         <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
         <h4 class="modal-title">{{ trans('app.user_information') }}</h4>
       </div>
       <div class="modal-body">
-        <div id="section"></div>
-
-        <div class="form-group mb-3">
-            <input name="client_mobile" type="tel" id="mobile" class="form-control" value="+" placeholder="{{ trans('app.client_mobile') }}" required>
-            <button onclick="sendOtp()" class="btn btn-sm btn-primary">Send OTP</button>
-            <span class="text-danger">The Mobile No. field is required!</span>
-        </div>
-
-        <p>
-            <input name="otp" type="number" id="otp" class="form-control" placeholder="Enter OTP Here" required>
-            <span  id="otp-alert-msg">Please enter mobile number first</span>
-        </p>
-
-        <p>
-            <input 
-                type="text"
-                name="note"
-                class="form-control"
-                placeholder="Your Full Name"
-                onkeydown="return /[a-z]/i/s*.test(event.key)"
-                required
-            />
-            <span class="text-danger">The Name field is required!</span>
-        </p>
-        <p>
-            <textarea name="note2" id="name" class="form-control" placeholder="Note">{{ old('note') }}</textarea>
-            <span class="text-muted">The Note field is optional!</span>
-        </p>
-
-        <div class="form-check">
-            <input class="form-check-input" style="margin-right: 10px" type="checkbox" name="agree" value="1" id="defaultCheck1" required>
-            <label class="form-check-label" for="defaultCheck1">
-                I agree with the terms and conditions
-            </label>
-        </div>
-
-        {{-- <div class="row">
-            <label for="password" class="col-md-4 control-label">Captcha</label>
-
-            <div class="col-md-6">
-                <div class="captcha">
-                <span id="recaptcha">{!! captcha_img() !!}</span>
-                <button type="button" onclick="recaptcha()" class="btn btn-success btn-refresh"><i class="fa fa-refresh"></i></button>
-                </div>
-                <input id="captcha" type="text" class="form-control" placeholder="Enter Captcha" name="captcha">
-
-
-                @if ($errors->has('captcha'))
-                    <span class="help-block">
-                        <strong>{{ $errors->first('captcha') }}</strong>
-                    </span>
-                @endif
+        
+        <div id="otp-form">
+            <div class="form-group mb-3">
+                Mobile Number <span class="text-danger">*</span>(<span class="text-info">Ex: {{companyDetails($company->company_id)->example_phone}}</span>)
+                <input name="client_mobile" type="tel" id="mobile" class="form-control" value="{{$setting->country_code}}" placeholder="{{ trans('app.client_mobile') }}" required>
+                <button onclick="sendOtp()" id="sendOtpBtn" class="btn btn-sm btn-primary">Send OTP</button>                
             </div>
-        </div> --}}
 
-        <input type="hidden" name="department_id">
-        <input type="hidden" name="counter_id">
-        <input type="hidden" name="user_id">
-        <input type="hidden" name="companyId" value="{{ $company->company_id }}">
-      </div>
-      <div class="modal-footer">
-        <button type="submit" class="btn btn-success hidden">{{ trans('app.submit') }}</button>
-      </div>
+            <p>
+                <input name="otp" type="number" id="otp" class="form-control" placeholder="Enter OTP Here" required>
+                <span  id="otp-alert-msg">Please enter mobile number first</span>
+            </p>
+
+            <button class="btn btn-success" id="check-otp" onclick="checkOTP(event)">Submit</button>
+
+            <div id="otp-resp-msg" class="text-danger"></div>
+        </div>
+        
+      {{ Form::open(['url' => 'guest/token', 'class' => 'AutoFrm']) }} 
+
+
+        <div id="after-otp" style="display: none">
+
+            <input name="client_mobile" type="hidden" id="success_mobile" class="form-control">
+            
+            <div id="ajax-section-load"></div>
+
+            <p>
+                <input 
+                    type="text"
+                    name="note"
+                    class="form-control"
+                    placeholder="Your Full Name"
+                    onkeydown="return /[a-z, ]/i.test(event.key)"
+                    required
+                />
+                <span class="text-danger">The Name field is required!</span>
+            </p>
+            <p>
+                <textarea name="note2" id="name" class="form-control" placeholder="Note">{{ old('note') }}</textarea>
+                <span class="text-muted">The Note field is optional!</span>
+            </p>
+
+
+            <div class="form-check">
+                <input class="form-check-input" style="margin-right: 10px" type="checkbox" name="agree" value="1" id="defaultCheck1" required>
+                <label class="form-check-label" for="defaultCheck1">
+                    I agree with the terms and conditions
+                </label>
+            </div>
+
+
+            <input type="hidden" name="department_id">
+            <input type="hidden" name="counter_id">
+            <input type="hidden" name="user_id">
+            <input type="hidden" name="companyId" value="{{ $company->company_id }}">
+        
+            <div class="modal-footer">
+                <button type="submit" class="btn btn-success hidden">{{ trans('app.submit') }}</button>
+            </div>
+        </div>
+      
       {{ Form::close() }}
+
+      </div>
     </div><!-- /.modal-content -->
   </div><!-- /.modal-dialog -->
 </div><!-- /.modal -->
@@ -141,6 +141,7 @@
                 // console.log(res);
                 if(res.success == 1)
                 {
+                    $("#sendOtpBtn").text("Resend OTP")
                     $("#mobile").attr('readonly','readonly');
                     $("#otp-alert-msg").text("Please check your phone number and enter the OTP here");
                 }
@@ -148,6 +149,38 @@
                 {
                     $("#mobile").val(res.phone);
                     $("#otp-alert-msg").text("something went wrong.");
+                }
+            }
+        })
+    }
+
+    function checkOTP(e)
+    {
+        e.preventDefault();
+        let phone = $("#mobile").val();
+        let otp = $("#otp").val();
+
+        $.ajax({
+            url:"{{route('ajax.send.otp')}}",
+            type: "GET",
+            data:{
+                phone:phone,
+                otp:otp
+            },
+            beforeSend: () => {
+                $("#check-otp").html('Checking...');
+            },
+            success: function(res){
+                if(res.success == 1)
+                {
+                    $("#otp-form").hide();
+                    $("#after-otp").css("display", "block");
+                    $("#success_mobile").val(phone)
+                }
+                else
+                {
+                    $("#check-otp").html('Submit');
+                    $("#otp-resp-msg").html(res.message);
                 }
             }
         })
@@ -167,11 +200,11 @@
                 // console.log(res);
                 if(res.items > 0)
                 {
-                    $("#section").html(res.html);
+                    $("#ajax-section-load").html(res.html);
                 }
                 else
                 {
-                    $("#section").html('');
+                    $("#ajax-section-load").html('');
                 }
             }
         })
@@ -198,74 +231,74 @@
         $('.modal-backdrop').remove();
     });
 
-    $("input[name=client_mobile], textarea[name=note]").on('keyup change', function(e){
-        var valid = false;
-        var mobileErrorMessage = "";
-        var noteErrorMessage = "";
-        var mobile = $('input[name=client_mobile]').val();
-        var note   = $('textarea[name=note]').val();
+    // $("input[name=client_mobile], textarea[name=note]").on('keyup change', function(e){
+    //     var valid = false;
+    //     var mobileErrorMessage = "";
+    //     var noteErrorMessage = "";
+    //     var mobile = $('input[name=client_mobile]').val();
+    //     var note   = $('textarea[name=note]').val();
 
-        if ($('input[name=client_mobile]').length)
-        {
-            if (mobile == '')
-            {
-                mobileErrorMessage = "The Mobile No. field is required!";
-                valid = false;
-            } 
-            else if(!$.isNumeric(mobile)) 
-            {
-                mobileErrorMessage = "The Mobile No. is incorrect!";
-                valid = false;
-            }
-            else if (mobile.length >= 15 || mobile.length < 7)
-            {
-                mobileErrorMessage = "The Mobile No. must be between 7-15 digits";
-                valid = false;
-            } 
-            else
-            { 
-                mobileErrorMessage = "";
-                valid = true;
-            }   
-        }   
+    //     if ($('input[name=client_mobile]').length)
+    //     {
+    //         if (mobile == '')
+    //         {
+    //             mobileErrorMessage = "The Mobile No. field is required!";
+    //             valid = false;
+    //         } 
+    //         else if(!$.isNumeric(mobile)) 
+    //         {
+    //             mobileErrorMessage = "The Mobile No. is incorrect!";
+    //             valid = false;
+    //         }
+    //         else if (mobile.length >= 15 || mobile.length < 7)
+    //         {
+    //             mobileErrorMessage = "The Mobile No. must be between 7-15 digits";
+    //             valid = false;
+    //         } 
+    //         else
+    //         { 
+    //             mobileErrorMessage = "";
+    //             valid = true;
+    //         }   
+    //     }   
 
-        if ($('textarea[name=note]').length)
-        {
-            if (note == '')
-            {
-                noteErrorMessage = "The Note field is required!";
-                valid = false;
-            }
-            else if (note.length >= 255 || note.length < 0)
-            {
-                noteErrorMessage = "The Note must be between 1-255 characters";
-                valid = false;
-            }
-            else
-            {
-                noteErrorMessage = "";
-                valid = true;
-            }
-        }
+    //     if ($('textarea[name=note]').length)
+    //     {
+    //         if (note == '')
+    //         {
+    //             noteErrorMessage = "The Note field is required!";
+    //             valid = false;
+    //         }
+    //         else if (note.length >= 255 || note.length < 0)
+    //         {
+    //             noteErrorMessage = "The Note must be between 1-255 characters";
+    //             valid = false;
+    //         }
+    //         else
+    //         {
+    //             noteErrorMessage = "";
+    //             valid = true;
+    //         }
+    //     }
 
 
-        if(!valid && mobileErrorMessage.length > 0)
-        {
-            $('.modal button[type=submit]').addClass('hidden');
-        } 
-        else if(!valid && noteErrorMessage.length > 0)
-        {
-            $('.modal button[type=submit]').addClass('hidden');
-        } 
-        else
-        {
-            $(this).next().html(" ");
-            $('.modal button[type=submit]').removeClass('hidden');
-        }
-        $('textarea[name=note]').next().html(noteErrorMessage);
-        $('input[name=client_mobile]').next().html(mobileErrorMessage);  
+    //     if(!valid && mobileErrorMessage.length > 0)
+    //     {
+    //         $('.modal button[type=submit]').addClass('hidden');
+    //     } 
+    //     else if(!valid && noteErrorMessage.length > 0)
+    //     {
+    //         $('.modal button[type=submit]').addClass('hidden');
+    //     } 
+    //     else
+    //     {
+    //         $(this).next().html(" ");
+    //         $('.modal button[type=submit]').removeClass('hidden');
+    //     }
+    //     $('textarea[name=note]').next().html(noteErrorMessage);
+    //     $('input[name=client_mobile]').next().html(mobileErrorMessage);  
 
-    });
+    // });
 
     var frm = $(".AutoFrm");
     frm.on('submit', function(e){

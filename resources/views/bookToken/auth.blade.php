@@ -7,6 +7,8 @@
 
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+    {{-- Bootstrap Icons --}}
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.3/font/bootstrap-icons.css">
 
     <title>Gokiiw</title>
 
@@ -22,8 +24,11 @@
         <div class="row align-items-center">
             <div class="col-12">
               <div class="card shadow">
-                <div class="card-header text-center bg-primary text-light">
-                  <h4>{{companyDetails($data['companyId'])->title}}</h4>
+                <div class="card-header bg-primary text-light">
+                  <div class="row text-center">
+                    <div class="col-2"><a href="{{route('book.token.index', companyToken($data['companyId']))}}" class="text-light"> <i class="bi bi-arrow-left"></i> Back</a></div>
+                    <div class="col"><h4>{{companyDetails($data['companyId'])->title}}</h4></div>
+                  </div>
                 </div>
 
                 <div class="card-body" style="min-height: 60vh">
@@ -44,8 +49,6 @@
                             <input type="hidden" name="user_id" value="{{$data['user_id']}}">
                             <input type="hidden" name="companyId" value="{{ $data['companyId'] }}">
                             
-                            
-
                             <div class="form-group mb-3" id="otp-phone">
                                 <label for="">Enter Your Phone Number (<span class="text-danger">* required</span>)</label>
                                 
@@ -72,11 +75,25 @@
                                 />
                             </div>
                           
-
                             <button class="w-100 btn btn-primary" id="form-submit-btn" />Submit</button>
+
+                            <center>
+                              <a href="javascript::" onclick="document.getElementById('resendOtpForm').submit()" class="mt-3 mx-auto">Resend OTP</a>
+                            </center>
+                          </form>
+
+                          <form action="{{ route('book.token.auth.otp') }}" method="post" id="resendOtpForm">
+                            @csrf
+                            <input type="hidden" name="department_id" value="{{$data['department_id']}}">
+                            <input type="hidden" name="counter_id" value="{{$data['counter_id']}}">
+                            <input type="hidden" name="user_id" value="{{$data['user_id']}}">
+                            <input type="hidden" name="companyId" value="{{ $data['companyId'] }}">
+
+                            <input type="hidden" name="client_mobile" value="{{$client_mobile}}">
                           </form>
 
                           @else
+                          
                           <form action="{{route('book.token.auth.otp')}}" method="post">
                             @csrf
                             <input type="hidden" name="department_id" value="{{$data['department_id']}}">
@@ -87,14 +104,14 @@
                             
 
                             <div class="form-group mb-3" id="otp-phone">
-                                <label for="">Enter Your Phone Number (<span class="text-danger">* required</span>)</label>
+                                <label for="">Enter Your Phone Number (<span class="text-danger">* required</span>)</label> <br> (<small class="text-info">Ex: {{companyDetails($data['companyId'])->example_phone}}</small>)
                                 
                                 <input 
                                   name="client_mobile" 
                                   id="mobile" 
                                   type="tel" 
                                   class="form-control mobile"
-                                  value="+" 
+                                  value="{{defaultCountryCode($data['companyId'])}}" 
                                   required
                                   onclick="validatingPhoneNumber(this.value)"
                                   onkeyup="validatingPhoneNumber(this.value)"

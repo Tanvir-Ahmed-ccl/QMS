@@ -11,6 +11,7 @@ use App\Models\StripePayment;
 use App\Models\User;
 use App\Owner;
 use Carbon\Carbon;
+use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Auth;
@@ -522,5 +523,36 @@ class OwnerController extends Controller
 
         return back()
                 ->with('error', 'Record does not exists');
+    }
+
+
+
+    /**
+     * terms of service
+     */
+    public function showTerms()
+    {
+        $terms = AppSettings::first()->terms;
+
+        return view('owner.terms', compact('terms'));
+    }
+
+
+    /**
+     * update terms of service
+     */
+    public function updateTerms(Request $request)
+    {
+        try{
+            AppSettings::first()->update([
+                "terms" =>  $request->terms
+            ]);
+
+            return back()->with('success', 'Record updated successfully');
+        }
+        catch(Exception $e)
+        {
+            return back()->with('error', $e->getMessage());
+        }
     }
 }

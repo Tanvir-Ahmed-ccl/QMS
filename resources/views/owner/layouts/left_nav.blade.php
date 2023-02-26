@@ -54,6 +54,13 @@
                         <i class="menu-icon fa fa-cog"></i>Addons
                     </a>
                 </li>
+
+                <li class="{{ (request()->segment(2) == 'addon') ? 'active' : '' }}">
+                    <a href="{{ route('owner.terms') }}">
+                        <i class="menu-icon fa fa-cog"></i>Terms of service
+                    </a>
+                </li>
+
                 {{-- <li class="{{ (request()->segment(2) == 'about') ? 'active' : '' }}">
                     <a href="{{ route('owner.app.about') }}">
                         <i class="menu-icon fa fa-building-o"></i>About

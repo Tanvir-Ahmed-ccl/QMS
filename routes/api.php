@@ -37,3 +37,17 @@ Route::prefix('{userId}')
     Route::get('home', 'Api\HomeController@index');
 
 });
+
+
+
+
+/** --------------- Route For Customer Auth
+ * ============================================*/
+Route::namespace("Api\Auth")
+->group(function(){
+
+    Route::post("customer/login", "CustomerAuthController@login");
+    Route::post("customer/signup", "CustomerAuthController@register");
+    Route::post("customer/otp", "CustomerAuthController@checkOtpAndLogin");
+
+});

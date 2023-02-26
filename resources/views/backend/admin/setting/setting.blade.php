@@ -1,6 +1,15 @@
 @extends('layouts.backend')
 @section('title', trans('app.app_setting'))
 
+@push('styles')
+    <link rel="stylesheet" href="{{ asset('intelInput/style.css') }}">
+    <style>
+        .iti{
+            display: block !important;
+        }
+    </style>
+@endpush
+
 @section('content')
 <div class="panel panel-primary" id="printMe">
 
@@ -122,6 +131,33 @@
                 <span class="text-danger">{{ $errors->first('timezone') }}</span>
             </div> 
 
+            {{-- Country Code --}}
+            <div class="form-group @error('country_code') has-error @enderror">
+                <label for="country_code">Country Code <i class="text-danger">*</i> (Only Code)</label><br/>
+                <input 
+                    name="country_code" 
+                    type="tel" 
+                    id="mobile" 
+                    class="form-control" 
+                    value="{{$setting->country_code}}" 
+                    onkeydown="return /[0-9]/i.test(event.key)"
+                    required
+                />
+            </div> 
+
+            {{-- Country Code --}}
+            <div class="form-group @error('example_phone') has-error @enderror">
+                <label for="example_phone">Example Phone Number<i class="text-danger">*</i></label><br/>
+                <input 
+                    name="example_phone"
+                    type="number"
+                    class="form-control"
+                    value="{{$setting->example_phone}}" 
+                    onkeydown="return /[0-9]/i.test(event.key)"
+                    required
+                />
+            </div> 
+
             <div class="form-group @error('favicon') has-error @enderror">
                 <label for="favicon">{{ trans('app.favicon') }} </label>
                 <img src="{{ asset((session('favicon')?session('favicon'):$setting->favicon)) }}" alt="favicon" class="img-thubnail thumbnail" width="50" height="50"> 
@@ -152,4 +188,27 @@
 </div> 
 @endsection
 
+
+@push('scripts')
+    <script src="{{ asset('intelInput/jquery.min.js') }}"></script>
+    <script src="{{ asset('intelInput/script.min.js') }}"></script>
+    <script>
+        $(function() {
+            $("#mobile").intlTelInput({
+                allowExtensions: true,
+                autoFormat: false,
+                autoHideDialCode: false,
+                autoPlaceholder: false,
+                // defaultCountry: "gh",
+                defaultCountry: null,
+                // ipinfoToken: "yolo",
+                nationalMode: false,
+                numberType: "MOBILE",
+                // preferredCountries: ['gh', 'us'],
+                preventInvalidNumbers: true,
+            });
+        });
+    </script>
+
+@endpush
  

@@ -10,6 +10,44 @@ use Illuminate\Support\Facades\DB;
 
 class AjaxController extends Controller
 {
+
+    public function getTimeSchedule(Request $request)
+    {
+        $data = $request->only('selectedDate', 'companyId', 'departmentId', 'sectionId');
+
+        $openTime = date("H:i", strtotime(companyDetails($data['companyId'])->opening_time));
+        $closeTime = date("H:i", strtotime(companyDetails($data['companyId'])->closing_time));
+
+        $html = '<label for="">Select Time</label>
+                    <select name="time" class="form-select">
+                        <option value="" selected disabled>Select One</option>';
+
+        for ($i=1; $i<1000000; $i++)
+        {
+            if($openTime >= $closeTime){
+                break;
+            }
+
+            $token = Token::where('department_id', $data['departmentId'])
+                    ->where('section_id', $request['sectionId'])
+                    ->where('created_at', "=", date('Y-m-d H:i:s', strtotime($data['selectedDate']. ' ' . $openTime)));
+
+            if(!$token->exists())
+            {
+                $html .= '<option value="'.$openTime.'"> '.$openTime.' </option>';
+            }
+            
+            $openTime = \Carbon\Carbon::parse($openTime)->addMinutes(5)->format("H:i");
+        }
+
+        $html .= '</select>';
+        
+
+        return $html;
+        
+    }
+
+
     public function section(Request $request)
     {
         $counter = TokenSetting::where('department_id', $request->key)

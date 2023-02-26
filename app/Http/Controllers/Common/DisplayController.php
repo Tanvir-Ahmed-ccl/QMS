@@ -68,7 +68,7 @@ class DisplayController extends Controller
         $nowServing = [];
         $newToken   = [];
         $setting  = DisplaySetting::where('company_id', auth()->user()->company_id)->first(); 
-        $appSetting = Setting::where('company_id', auth()->user()->company_id)->first();   
+        $appSetting = Setting::where('company_id', auth()->user()->company_id)->first();
         date_default_timezone_set(session('app.timezone')?session('app.timezone'):$appSetting->timezone);
 
         $displays = DB::select("
@@ -91,7 +91,8 @@ class DisplayController extends Controller
             LEFT JOIN 
                 counter ON counter.id = token.counter_id
             LEFT JOIN 
-                user ON user.id = token.user_id            
+                user ON user.id = token.user_id       
+            WHERE token.created_at <= '".date("Y-m-d")."'     
             ORDER BY token.is_vip DESC, token.id ASC
         ");
 
@@ -196,71 +197,72 @@ class DisplayController extends Controller
         
         $token_list = array();
 
-        if($customDisplay->type == '1')
-        {
-            $counters = DB::table('sections')
-            ->where('company_id', auth()->user()->company_id)
-            ->where('status', 1)
-            ->where(function($q) use($customDisplay) {
-                if (!empty($customDisplay->sections)) {
-                    $q->whereIn('id', explode(',', $customDisplay->sections));
-                }
-            })
-            ->orderBy(DB::raw('LENGTH(name)'), 'ASC')
-            ->orderBy('name', 'ASC')
-            ->get();
+        // if($customDisplay->type == '1')
+        // {
+        //     $counters = DB::table('sections')
+        //     ->where('company_id', auth()->user()->company_id)
+        //     ->where('status', 1)
+        //     ->where(function($q) use($customDisplay) {
+        //         if (!empty($customDisplay->sections)) {
+        //             $q->whereIn('id', explode(',', $customDisplay->sections));
+        //         }
+        //     })
+        //     ->orderBy(DB::raw('LENGTH(name)'), 'ASC')
+        //     ->orderBy('name', 'ASC')
+        //     ->get();
 
-            foreach ($counters as $counter) 
-            {
-                $tokens = DB::select("
-                    SELECT 
-                        token.token_no AS token,
-                        department.name AS department,
-                        sections.name AS section,
-                        counter.name AS counter,
-                        token.note AS note,
-                        token.client_mobile AS mobile,
-                        token.updated_at,
-                        CONCAT_WS(' ', user.firstname, user.lastname) as officer
-                    FROM (
-                            SELECT t.* 
-                            FROM token t 
-                            WHERE 
-                                t.status = 0 
-                                AND t.section_id = $counter->id
-                            ORDER BY t.id ASC 
-                            LIMIT 5
-                        ) AS token
-                    LEFT JOIN
-                        department ON department.id = token.department_id
-                    LEFT JOIN
-                        sections ON sections.id = token.section_id
-                    LEFT JOIN 
-                        counter ON counter.id = token.counter_id
-                    LEFT JOIN 
-                        user ON user.id = token.user_id
-                    WHERE token.company_id = $company_id
-                    ORDER BY token.is_vip ASC, token.id DESC
-                    LIMIT 5
-                ");
+        //     foreach ($counters as $counter) 
+        //     {
+        //         $tokens = DB::select("
+        //             SELECT 
+        //                 token.token_no AS token,
+        //                 department.name AS department,
+        //                 sections.name AS section,
+        //                 counter.name AS counter,
+        //                 token.note AS note,
+        //                 token.client_mobile AS mobile,
+        //                 token.updated_at,
+        //                 CONCAT_WS(' ', user.firstname, user.lastname) as officer
+        //             FROM (
+        //                     SELECT t.* 
+        //                     FROM token t 
+        //                     WHERE 
+        //                         t.status = 0 
+        //                         AND t.section_id = $counter->id
+        //                     ORDER BY t.id ASC 
+        //                     LIMIT 5
+        //                 ) AS token
+        //             LEFT JOIN
+        //                 department ON department.id = token.department_id
+        //             LEFT JOIN
+        //                 sections ON sections.id = token.section_id
+        //             LEFT JOIN 
+        //                 counter ON counter.id = token.counter_id
+        //             LEFT JOIN 
+        //                 user ON user.id = token.user_id
+        //             WHERE token.company_id = $company_id
+        //             AND token.created_at <= '".date("Y-m-d")."'
+        //             ORDER BY token.is_vip ASC, token.id DESC
+        //             LIMIT 5
+        //         ");
 
-                foreach ($tokens as $token) 
-                { 
-                    $token_list[$token->counter][] = array(
-                        'counter'    => $token->counter,
-                        'token'      => $token->token,
-                        'mobile'     => $token->mobile,
-                        'department' => $token->department,
-                        'section'    => $token->section,
-                        'officer'    => $token->officer,
-                        'name'       => $token->note,
-                        'updated_at' => $token->updated_at,
-                    ); 
-                }
-            }
-        }
-        else
-        {
+        //         foreach ($tokens as $token) 
+        //         { 
+        //             $token_list[$token->counter][] = array(
+        //                 'counter'    => $token->counter,
+        //                 'token'      => $token->token,
+        //                 'mobile'     => $token->mobile,
+        //                 'department' => $token->department,
+        //                 'section'    => $token->section,
+        //                 'officer'    => $token->officer,
+        //                 'name'       => $token->note,
+        //                 'updated_at' => $token->updated_at,
+        //             ); 
+        //         }
+        //     }
+        // }
+        // else
+        // {
             $counters = DB::table('counter')
             ->where('company_id', auth()->user()->company_id)
             ->where('status', 1)
@@ -303,6 +305,7 @@ class DisplayController extends Controller
                     LEFT JOIN 
                         user ON user.id = token.user_id
                     WHERE token.company_id = $company_id
+                    AND token.created_at <= '".date("Y-m-d")."'
                     ORDER BY token.is_vip ASC, token.id DESC
                     LIMIT 5
                 ");
@@ -321,7 +324,7 @@ class DisplayController extends Controller
                     ); 
                 }
             }
-        }
+        // }
 
 
         $size  = sizeof($token_list)>0?sizeof($token_list):1;    
@@ -471,7 +474,6 @@ class DisplayController extends Controller
             ->orderBy('name', 'ASC')
             ->get();
 
-
         $token_list = array(); 
         foreach ($departments as $department) 
         {
@@ -503,6 +505,7 @@ class DisplayController extends Controller
                 LEFT JOIN 
                     user ON user.id = token.user_id
                 WHERE token.company_id = $company_id
+                AND token.created_at <= '".date("Y-m-d")."'
                 ORDER BY token.is_vip ASC, token.id DESC
                 LIMIT 5
             ");
@@ -697,6 +700,7 @@ class DisplayController extends Controller
                 ->where("t.counter_id", $counter->id)
                 ->where("t.status", "0")
                 ->where('t.company_id', auth()->user()->company_id)
+                ->where('t.created_at', '<=', date('Y-m-d'))
                 ->orderBy('t.is_vip', 'DESC')
                 ->orderBy('t.id', 'ASC')
                 ->first();
@@ -878,7 +882,8 @@ class DisplayController extends Controller
             LEFT JOIN 
                 counter ON counter.id = token.counter_id
             LEFT JOIN 
-                user ON user.id = token.user_id            
+                user ON user.id = token.user_id      
+            WHERE token.created_at <= '".date('Y-m-d')."'      
             ORDER BY token.is_vip DESC, token.id ASC
         ");
 

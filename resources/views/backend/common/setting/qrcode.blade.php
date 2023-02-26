@@ -22,16 +22,18 @@
                         {{-- {!! QrCode::size(250)->generate('ItSolutionStuff.com'); !!} --}}
                         <img src="{{ asset(getCompanyDetails(Auth::id())->qrcode) }}" alt="QR Code" width="200">
                         <h5><b>SCAN ME</b></h5>
-                        <a href="{{ asset(getCompanyDetails(Auth::id())->qrcode) }}" download="qrcode" class="btn btn-default buttons-download btn-sm" type="button"><span><i class="fa fa-download"></i></span></a>
+
+                        <a 
+                            target="_blank"
+                            title="Copy Link"
+                            href="{{route('guestLogin', companyOwner(Auth::id())->token)}}"
+                        >{{route('guestLogin', companyOwner(Auth::id())->token)}} </a>
+                        <button onclick="copyQrCode()" class="mb-3" id="copy-qr-btn">Copy</button>
                         
-                        <button 
-                            title="Copy Link" 
-                            onclick="copyQrCode()"
-                            class="btn btn-default btn-sm" 
-                            type="button"
-                        >
-                            <span><i class="fa fa-copy"></i></span>
-                        </button>
+                        <br>
+                        <a href="{{ asset(getCompanyDetails(Auth::id())->qrcode) }}" download="qrcode" class="btn btn-default buttons-download btn-sm" type="button" style="margin-top: 10px"><span><i class="fa fa-download"></i></span></a>
+                        
+                        
                     </div>
                 </div>
             </div>
@@ -47,7 +49,7 @@ function copyQrCode() {
     // let val = "{{route('guestLogin', getCompanyDetails(Auth::id())->token)}}";
     // navigator.clipboard.writeText('');
     navigator.clipboard.writeText("{{route('guestLogin', getCompanyDetails(Auth::id())->token)}}");
-    alert("Copied")
+    $("#copy-qr-btn").text('Copied')
 };
 </script>
 @endpush

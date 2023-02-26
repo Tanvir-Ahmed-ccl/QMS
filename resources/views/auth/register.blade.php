@@ -106,7 +106,7 @@
 
                 <div class="row my-3">
                   <div class="col-12 text-center my-3">
-                    <small>By signing up, you agree to our Terms of Service</small>
+                    <small>By signing up, you agree to our <a href="{{route('terms')}}" target="_blank">Terms of Service</a></small>
                   </div>
                   <div class="col-12">
                     <button class="btn btn-block w-100 py-2 btn-primary">Start free trial</button>

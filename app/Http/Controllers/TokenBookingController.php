@@ -91,6 +91,7 @@ class TokenBookingController extends Controller
 
         $token = Token::where('department_id', $request->department_id)
                     ->where('section_id', $request->section_id)
+                    ->where('status', 0)
                     ->where('created_at', "=", date('Y-m-d H:i:s', strtotime($request->date . ' ' . $request->time)));
         
         if(!$token->exists())
@@ -169,7 +170,7 @@ class TokenBookingController extends Controller
         $otp = rand(100000, 999999);
         $client_mobile = $request->client_mobile;
 
-        $token = Token::where('client_mobile', $request->client_mobile)->where('created_at', '>', date('Y-m-d H:i:m', strtotime(\Carbon\Carbon::now()->addMinutes(5))));
+        $token = Token::where('status', 0)->where('client_mobile', $request->client_mobile)->where('created_at', '>', date('Y-m-d H:i:m', strtotime(\Carbon\Carbon::now()->addMinutes(5))));
 
         if(!$token->exists())
         {
@@ -177,7 +178,7 @@ class TokenBookingController extends Controller
 
             if($table->exists())
             {
-                $table->update(['otp'=>$otp, 'updated_at'=>now()]);
+                $table->update(['otp'=>$otp, 'created_at'=>now()]);
             }
             else
             {
@@ -211,20 +212,31 @@ class TokenBookingController extends Controller
 
         if(DB::table("otps")->where(['phone' => $request->client_mobile, 'otp' => $request->otp])->exists())
         {
-            // DB::table("otps")->where(['phone' => $request->client_mobile, 'otp' => $request->otp])->delete();
+            $otpRow = DB::table("otps")->where(['phone' => $request->client_mobile, 'otp' => $request->otp])->first();
 
-            $sections = TokenSetting::select( 
-                            'sections.name',
-                            'sections.id',
-                        )
-                        ->join('sections', 'sections.id', '=', 'token_setting.section_id')
-                        ->where('token_setting.department_id', $data['department_id'])
-                        ->where('token_setting.status', 1)
-                        ->groupBy('token_setting.section_id')
-                        ->get(); 
+            $expiredAt = \Carbon\Carbon::parse($otpRow->created_at)->addMinutes(2);
 
-            return view('bookToken.infoForm', compact('data', 'client_mobile', 'sections'));
+            if($expiredAt < now())
+            {
+                $status = "OTP Expired";
+                return view('bookToken.auth', compact('data', 'status', 'client_mobile'));
+            }
+            else
+            {
+                DB::table("otps")->where(['phone' => $request->client_mobile, 'otp' => $request->otp])->delete();
 
+                $sections = TokenSetting::select( 
+                                'sections.name',
+                                'sections.id',
+                            )
+                            ->join('sections', 'sections.id', '=', 'token_setting.section_id')
+                            ->where('token_setting.department_id', $data['department_id'])
+                            ->where('token_setting.status', 1)
+                            ->groupBy('token_setting.section_id')
+                            ->get(); 
+
+                return view('bookToken.infoForm', compact('data', 'client_mobile', 'sections'));
+            }
         }
         else
         {
@@ -232,7 +244,6 @@ class TokenBookingController extends Controller
             return view('bookToken.auth', compact('data', 'status', 'client_mobile'));
         }
     }
-
 
 
     public function editAppointment(Request $request)
@@ -336,5 +347,31 @@ class TokenBookingController extends Controller
         } 
 
         return strtoupper($token);   
+    }
+
+
+    public function onDeveloping()
+    {
+        $data = [
+            'department_id' => 54,
+            'counter_id' => 75,
+            'user_id' => 142,
+            'companyId' => 65,
+            'client_mobile' =>  "+8801940204058"
+        ];
+
+        $client_mobile = "+8801940204058";
+
+        $sections = TokenSetting::select( 
+                        'sections.name',
+                        'sections.id',
+                    )
+                    ->join('sections', 'sections.id', '=', 'token_setting.section_id')
+                    ->where('token_setting.department_id', $data['department_id'])
+                    ->where('token_setting.status', 1)
+                    ->groupBy('token_setting.section_id')
+                    ->get(); 
+
+        return view('bookToken.infoForm', compact('data', 'client_mobile', 'sections'));
     }
 }

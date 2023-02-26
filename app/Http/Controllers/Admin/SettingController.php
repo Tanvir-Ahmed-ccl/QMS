@@ -126,6 +126,8 @@ class SettingController extends Controller
                         'copyright_text' => $request->copyright_text ?? null, 
                         'language'    => $request->lang, 
                         'timezone'    => $request->timezone,
+                        'country_code'    => $request->country_code,
+                        'example_phone'    => $request->example_phone,
                         'opening_time'    => $request->opening_time,
                         'closing_time'    => $request->closing_time,
                         'day_offs'      => ($request->has('day_offs')) ? json_encode($request->day_offs) : null,

