@@ -145,7 +145,7 @@
                 />
             </div> 
 
-            {{-- Country Code --}}
+            {{-- Example Phone Number --}}
             <div class="form-group @error('example_phone') has-error @enderror">
                 <label for="example_phone">Example Phone Number<i class="text-danger">*</i></label><br/>
                 <input 
@@ -153,10 +153,35 @@
                     type="number"
                     class="form-control"
                     value="{{$setting->example_phone}}" 
-                    onkeydown="return /[0-9]/i.test(event.key)"
+                    {{-- onkeydown="return /[0-9]/i.test(event.key)" --}}
                     required
                 />
-            </div> 
+            </div>
+            
+            {{-- reminder set --}}
+            <div class="form-group @error('reminder_for_booking') has-error @enderror">
+                <label for="reminder_for_booking">Set reminder for booking<i class="text-danger">*</i></label><br/>
+                <input 
+                    name="reminder_for_booking"
+                    type="number"
+                    class="form-control"
+                    placeholder="Number of Minutes before booking"
+                    value="{{$setting->reminder_for_booking}}" 
+                    required
+                />
+            </div>
+
+            {{-- Announcement --}}
+            <div class="form-group @error('reminder_for_booking') has-error @enderror">
+                <label for="announcement">Announcement</label><br/>
+                <textarea 
+                    name="announcement"
+                    class="form-control"
+                    placeholder="Type a Announcement"
+                    rows="5"
+                    required
+                >{{$setting->announcement}}</textarea>
+            </div>
 
             <div class="form-group @error('favicon') has-error @enderror">
                 <label for="favicon">{{ trans('app.favicon') }} </label>

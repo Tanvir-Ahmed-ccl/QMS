@@ -17,17 +17,14 @@
 
         <div class="row bg-dark text-light text-center justify-content-center align-items-center" style="min-height: 70vh">
           <div class="col-12 ">
+            
+            @if(is_null($setting->announcement))
             <h3>{{$setting->disable_msg}}</h3>
-
-            {{-- Present Time: {{$now = date('H:i:s')}} <br>
-            Start TIme: {{ $setting->opening_time }} <br>
-            Closing TIme: {{ $setting->closing_time }}
-
-            @if($now > $setting->closing_time || $now < $setting->opening_time)
-            <br>  Time is Over
             @else
-            <br> Ongoing
-            @endif --}}
+            <h3>
+              {!!$setting->announcement!!}
+            </h3>
+            @endif
           </div> 
         </div>
     </div>

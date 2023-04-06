@@ -39,11 +39,11 @@ class CustomerAuthController extends Controller{
             $customer = Customer::find(Auth::guard('customer')->id()); // store customer records
             Auth::guard('customer')->logout(); // auth logout
 
-            $customer->otp = rand(10000, 99999);
+            $customer->otp = rand(100000, 999999);
             $customer->save();
             
             // send otp to email and phone
-            $otpResp = $this->sendOtpToEmailAndPhone($customer->otp, $customer->email);
+            $otpResp = $this->sendOtpToEmailAndPhone($customer->email, $customer->otp);
 
             // if OTP send failed
             if($otpResp['status'] == false)
@@ -86,7 +86,7 @@ class CustomerAuthController extends Controller{
             return $this->error($message);
         }
 
-        $otp = rand(10000, 99999);
+        $otp = rand(100000, 999999);
 
         // create customer profile
         try{
@@ -97,6 +97,7 @@ class CustomerAuthController extends Controller{
                 'password' =>  bcrypt($request->confirm_password),
                 'otp'       =>  $otp,
                 'otp_send_at'  => now(),
+                'created_at'  => now(),
             ]);
         }
         catch(Exception $e)
@@ -105,7 +106,7 @@ class CustomerAuthController extends Controller{
         }
 
         // send OTP to email and phone
-        $resp = $this->sendOtpToEmailAndPhone($otp, $request->email);
+        $resp = $this->sendOtpToEmailAndPhone($request->email, $otp);
 
         if($resp['status'] == false)
         {
@@ -124,7 +125,7 @@ class CustomerAuthController extends Controller{
         $validator = Validator::make($request->all(), [
             "email" =>  ['required', 'email', 'exists:user'],
             "password"  =>  ['required', 'min:6'],
-            "otp"=>    ['required', 'min:5', 'max:5'],
+            "otp"=>    ['required', 'min:6'],
         ]);
 
         if($validator->fails())
@@ -140,7 +141,7 @@ class CustomerAuthController extends Controller{
 
             $expiredAt = \Carbon\Carbon::parse($customer->otp_send_at)->addMinutes(2);
 
-            if($expiredAt < now())
+            if($expiredAt > now())
             {
                 return $this->error("OTP Expired", 400, $request->only('email', 'otp'));
             }
@@ -171,7 +172,7 @@ class CustomerAuthController extends Controller{
 
     /** ------------    Send OTP to Email and Phone
      * =================================================*/
-    protected function sendOtpToEmailAndPhone($otp=null, $email, $phone = null)
+    protected function sendOtpToEmailAndPhone($email, $otp = null, $phone = null)
     {
         $otp = (is_null($otp)) ? rand(100000, 999999) : $otp; // 6 digits OTP
         $status = true;

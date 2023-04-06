@@ -14,30 +14,34 @@
 
     <div class="panel-body">
         <!-- setting form -->
-        <div class="col-sm-6">  
+        <div class="col-sm-4">  
             {{ Form::open(['url' => 'admin/token/setting']) }}
 
                 <div class="form-group @error('department_id') has-error @enderror">
                     <label for="department_id">{{ trans('app.department') }} <i class="text-danger">*</i></label><br/>
-                    {{ Form::select('department_id', $departmentList, null, ['placeholder' => 'Select Option', 'class'=>'select2 form-control']) }}<br/>
+                    {{ Form::select('department_id', $departmentList, null, ['placeholder' => 'Select Option', 'class'=>'select2 form-control', 'required'=>'required']) }}<br/>
                     <span class="text-danger">{{ $errors->first('department_id') }}</span>
                 </div> 
 
                 <div class="form-group @error('section_id') has-error @enderror">
                     <label for="section_id">{{ trans('app.service') }} <i class="text-danger">*</i></label><br/>
-                    {{ Form::select('section_id', $sections, null, ['placeholder' => 'Select Option', 'class'=>'select2 form-control']) }}<br/>
+                    <select name="section_id[]" class="form-control" placeholder="Select Option" multiple required>
+                        @foreach($sections as $key => $val)
+                        <option value="{{$key}}" @if(old('section_id')) {{ (in_array($key, old('section_id')) ? 'selected' : '') }} @endif >{{$val}}</option>
+                        @endforeach
+                    </select>
                     <span class="text-danger">{{ $errors->first('section_id') }}</span>
                 </div> 
 
                 <div class="form-group @error('counter_id') has-error @enderror">
                     <label for="counter">{{ trans('app.counter') }} <i class="text-danger">*</i></label><br/>
-                    {{ Form::select('counter_id', $countertList, null, ['placeholder' => 'Select Option', 'class'=>'select2 form-control']) }}<br/>
+                    {{ Form::select('counter_id', $countertList, null, ['placeholder' => 'Select Option', 'class'=>'select2 form-control', 'required'=>'required']) }}<br/>
                     <span class="text-danger">{{ $errors->first('counter_id') }}</span> 
                 </div> 
 
                 <div class="form-group @error('user_id') has-error @enderror">
                     <label for="officer">{{ trans('app.officer') }} <i class="text-danger">*</i></label><br/>
-                    {{ Form::select('user_id', $userList, null, ['placeholder' => 'Select Option', 'class'=>'select2 form-control']) }}<br/>
+                    {{ Form::select('user_id', $userList, null, ['placeholder' => 'Select Option', 'class'=>'select2 form-control', 'required'=>'required']) }}<br/>
                     <span class="text-danger">{{ $errors->first('user_id') }}</span>
                 </div> 
                 
@@ -50,7 +54,7 @@
         </div>
 
         <!-- display setting option -->
-        <div class="col-sm-6">
+        <div class="col-sm-8">
             <table class="display table table-bordered" width="100%" cellspacing="0">
                 <thead>
                     <tr>
@@ -70,7 +74,11 @@
                             <tr>
                                 <td>{{ $sl++ }}</td> 
                                 <td>{{ $token->department }}</td>
-                                <td>{{ $token->section }}</td>
+                                <td>
+                                    @foreach (services($token->services, "array") as $item)
+                                        <span class="badge" style="background-color: green; margin-right:2px">{{$item}}</span>
+                                    @endforeach
+                                </td>
                                 <td>{{ $token->counter }}</td>
                                 <td>{{ $token->firstname }} {{ $token->lastname }}</td>
                                 <td>

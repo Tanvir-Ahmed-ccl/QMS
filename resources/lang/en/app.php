@@ -75,6 +75,10 @@ return [
     /*Appointment*/
     'appointment'        => 'Appointment',
 
+    // advertisement
+    'advertisement' => 'Advertisement',
+    'ads' => 'ads',
+
     /*Counter*/
     'counter'      => 'Counter',
     'counter_no'      => 'Counter No',

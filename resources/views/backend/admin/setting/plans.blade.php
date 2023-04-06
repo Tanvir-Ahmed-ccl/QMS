@@ -123,6 +123,59 @@
 
     </div>
 </div> 
+
+
+<div class="panel panel-primary" id="printMe">
+
+    <div class="panel-heading">
+        <div class="row">
+            <div class="col-sm-12 text-left">
+                <h3>Select the best plan for SMS</h3>
+            </div> 
+        </div>
+    </div>    
+
+    <div class="panel-body"> 
+        <div class="row">
+            @foreach ($SMSplans as $item)
+            <div class="col-sm-4 mb-4">
+                <div class="card" style="border: 1.5px solid skyblue">
+                    <div class="card-body" style="text-align: center">
+                        <div class="mb-3">
+                            <h5><strong>{{ $item->title }}</strong></h5>
+                            <h2>{{\App\Models\AppSettings::first()->CURRENCY_SIGN}} {{ $item->price }} <small>/mo</small></h2>
+                        </div>
+                        <div class="my-4">
+                            <h5><strong>SMS Limit:</strong> {{ $item->sms_limit }}</h5>
+                            {!! $item->description !!}
+                        </div>
+                        
+                        <div style="margin: 20px 0">
+                            <form action="{{ route('stripe.payment') }}" method="POST">
+                                @csrf
+                                <input type="hidden" name="plan_type" value="SMS">
+                                <input type="hidden" name="plan_id" value="{{ $item->id }}">
+                                <input type="hidden" name="amount" value="{{ $item->price }}">
+                                <script 
+                                    src="https://checkout.stripe.com/checkout.js" class="stripe-button"
+                                    data-key = "{{ App\Models\AppSettings::first()->STRIPE_KEY }}"
+                                    data-amount="{{__($item->price * 100)}}"
+                                    data-name="{{ \App\Models\AppSettings::first()->APP_NAME }}"
+                                    data-description="Purchase SMS Plan"
+                                    data-images=""
+                                    data-currency="{{__(\App\Models\AppSettings::first()->CURRENCY_CODE)}}"                                    
+                                ></script>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            @endforeach
+            
+        </div>
+
+    </div>
+</div> 
 @endsection
 
  

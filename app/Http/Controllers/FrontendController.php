@@ -34,9 +34,6 @@ class FrontendController extends Controller
 
     public function guestLogin(Request $request)
     {
-        // return TokenBookingController::showTokenBooking($request->token);
-
-
         $token = $request->token;
 
         $query = User::query();
@@ -109,14 +106,16 @@ class FrontendController extends Controller
     public function guestPhoneCheck(Request $request)
     {
         // check customer phone number is exists or not
-        $existsPhoneToday = Token::where('client_mobile', $request->client_mobile)
-                                    ->whereDate('created_at', today())
-                                    ->exists();
+        $token = Token::where('client_mobile', $request->client_mobile)
+                                    ->where('status', 0)
+                                    ->whereDate('created_at', today());
                 
-        if($existsPhoneToday):
+        if($token->exists()):
         $data['phoneExists'] = 1;
+        $data['tokenId'] = $token->first()->id;
         else:
         $data['phoneExists'] = 0;
+        $data['tokenId'] = null;
         endif;
 
         return $data;
@@ -126,7 +125,7 @@ class FrontendController extends Controller
     public function sendOtpToPhone(Request $request)
     {
         $otp = rand(100000, 999999);
-        $phone = $request->phone;
+        $phone = $data['phone'] = $request->phone;
 
         $table = DB::table("otps")->where('phone', $phone);
 
@@ -144,14 +143,13 @@ class FrontendController extends Controller
             ]);
         }
 
-        $resp = sendSMSByTwilio($phone, "Your One Time Passcode (OTP) is ".$otp." received from Gokiiw");
+        $data['twilio_resp'] = sendSMSByTwilio($phone, $otp);
         
         return response()
                 ->json([
                     'success' =>    1,
                     'message'   =>  "OTP Send success",
-                    'data'  =>  $resp,
-                    'phone' =>  $phone
+                    'data'  =>  $data
                 ]);
     }
 
@@ -200,7 +198,7 @@ class FrontendController extends Controller
         try {
             DB::beginTransaction(); 
 
-            if ($validator->fails()) {
+            if ($validator->fails() && false) {
                 $data['status'] = false;
                 $data['exception'] = "<ul class='list-unstyled'>"; 
                 $messages = $validator->messages();
@@ -212,155 +210,167 @@ class FrontendController extends Controller
                 $data['exception'] = $validator->messages()->first();
             } else { 
 
-                //find auto-setting
-                // $settings = TokenSetting::select('counter_id','section_id','department_id','user_id','created_at')
-                //         ->where('department_id', $request->department_id)
-                //         ->where('section_id', $request->section_id)
-                //         ->groupBy('user_id')
-                //         ->get();
+                // find auto-setting
+                $settings = TokenSetting::select('counter_id','section_id','department_id','user_id','created_at')
+                        ->where('department_id', $request->department_id)
+                        ->whereIn('section_id', $request->section_id)
+                        ->groupBy('user_id')
+                        ->get();
 
                 //if auto-setting are available
-                // if (!empty($settings)) { 
+                if (!empty($settings)) { 
 
-                //     foreach ($settings as $setting) {
-                //         //compare each user in today
-                //         $tokenData = Token::select('department_id','counter_id','user_id',DB::raw('COUNT(user_id) AS total_tokens'))
-                //                 ->where('department_id',$setting->department_id)
-                //                 ->where('counter_id',$setting->counter_id)
-                //                 ->where('user_id',$setting->user_id)
-                //                 ->where('status', 0)
-                //                 ->whereRaw('DATE(created_at) = CURDATE()')
-                //                 ->orderBy('total_tokens', 'asc')
-                //                 ->groupBy('user_id')
-                //                 ->first();
+                    foreach ($settings as $setting) {
+                        //compare each user in today
+                        $tokenData = Token::select('department_id','counter_id','section_id','user_id',DB::raw('COUNT(user_id) AS total_tokens'))
+                                ->where('department_id',$setting->department_id)
+                                ->where('counter_id',$setting->counter_id)
+                                ->where('user_id',$setting->user_id)
+                                ->where('status', 0)
+                                ->whereRaw('DATE(created_at) = CURDATE()')
+                                ->orderBy('total_tokens', 'asc')
+                                ->groupBy('user_id')
+                                ->first();
 
-                //         //create user counter list
-                //         $tokenAssignTo[] = [
-                //             'total_tokens'  => (!empty($tokenData->total_tokens)?$tokenData->total_tokens:0),
-                //             'department_id' => $setting->department_id,
-                //             'counter_id'    => $setting->counter_id,
-                //             'user_id'       => $setting->user_id
-                //         ]; 
-                //     }
-
-                //     //findout min counter set to 
-                //     // $min = min($tokenAssignTo);
-                //     // $saveToken = [
-                //     //     'company_id'    => $companyId,
-                //     //     'token_no'      => $this->newToken($min['department_id'], $min['counter_id'], $companyId),
-                //     //     'client_mobile' => $request->client_mobile,
-                //     //     'department_id' => $min['department_id'],
-                //     //     'section_id'    => $request->section_id ?? 0,
-                //     //     'counter_id'    => $min['counter_id'],
-                //     //     'user_id'       => $min['user_id'],
-                //     //     'note'          => $request->note, 
-                //     //     'created_by'    => 0,
-                //     //     'created_at'    => date('Y-m-d H:i:s'), 
-                //     //     'updated_at'    => null,
-                //     //     'status'        => 0 
-                //     // ];
-                    
-                //     $saveToken = [
-                //         'company_id'    => $companyId,
-                //         'token_no'      => $this->newToken($request['department_id'], $request['counter_id'], $companyId),
-                //         'client_mobile' => $request->client_mobile,
-                //         'department_id' => $request->department_id,
-                //         'section_id'    => $request->section_id ?? 0,
-                //         'counter_id'    => $request->counter_id,
-                //         'user_id'       => $request->user_id,
-                //         'note'          => $request->note, 
-                //         'created_by'    => 0,
-                //         'created_at'    => date('Y-m-d H:i:s'), 
-                //         'updated_at'    => null,
-                //         'status'        => 0 
-                //     ]; 
-
-                // } else {
-                //     $saveToken = [
-                //         'company_id'    => $companyId,
-                //         'token_no'      => $this->newToken($request->department_id, $request->counter_id, $companyId),
-                //         'client_mobile' => $request->client_mobile,
-                //         'department_id' => $request->department_id,
-                //         'section_id'    => $request->section_id ?? 0,
-                //         'counter_id'    => $request->counter_id, 
-                //         'user_id'       => $request->user_id, 
-                //         'note'          => $request->note, 
-                //         'created_at'    => date('Y-m-d H:i:s'),
-                //         'created_by'    => 0,
-                //         'updated_at'    => null,
-                //         'status'        => 0
-                //     ];               
-                // }  
-
-                $settings = TokenSetting::select('counter_id','section_id','department_id','user_id','created_at')
-                            ->where('department_id', $request->department_id)
-                            ->where('section_id', $request->section_id)
-                            ->first();
-
-                        $saveToken = [
-                            'company_id'    => $companyId,
-                            'token_no'      => $this->newToken($settings['department_id'], $settings['counter_id'], $companyId),
-                            'client_mobile' => $request->client_mobile,
-                            'department_id' => $settings->department_id,
-                            'section_id'    => $settings->section_id ?? 0,
-                            'counter_id'    => $settings->counter_id,
-                            'user_id'       => $settings->user_id,
-                            'note'          => $request->note, 
-                            'note2'          => $request->note2, 
-                            'created_by'    => 0,
-                            'created_at'    => date('Y-m-d H:i:s'), 
-                            'updated_at'    => null,
-                            'status'        => 0 
+                        //create user counter list
+                        $tokenAssignTo[] = [
+                            'total_tokens'  => (!empty($tokenData->total_tokens)?$tokenData->total_tokens:0),
+                            'department_id' => $setting->department_id,
+                            'section_id' => $setting->section_id,
+                            'counter_id'    => $setting->counter_id,
+                            'user_id'       => $setting->user_id
                         ]; 
+                    }
 
-                        //store in database  
-                        //set message and redirect
-                        if ($insert_id = Token::insertGetId($saveToken)) { 
+                    // return $tokenAssignTo;
+                    // findout min counter set to 
+                    $min = min($tokenAssignTo);
+                    $saveToken = [
+                        'company_id'    => $companyId,
+                        'token_no'      => $this->newToken($min['department_id'], $min['counter_id'], $companyId),
+                        'client_mobile' => $request->client_mobile,
+                        'department_id' => $min['department_id'],
+                        'section_id'    => $min['section_id'],
+                        'services'      => json_encode($request->section_id),
+                        'counter_id'    => $min['counter_id'],
+                        'user_id'       => $min['user_id'],
+                        'note'          => $request->note, 
+                        'created_by'    => 0,
+                        'created_at'    => date('Y-m-d H:i:s'), 
+                        'updated_at'    => null,
+                        'status'        => 0 
+                    ];
+                    
+                    //     $saveToken = [
+                    //         'company_id'    => $companyId,
+                    //         'token_no'      => $this->newToken($request['department_id'], $request['counter_id'], $companyId),
+                    //         'client_mobile' => $request->client_mobile,
+                    //         'department_id' => $request->department_id,
+                    //         'section_id'    => $request->section_id ?? 0,
+                    //         'counter_id'    => $request->counter_id,
+                    //         'user_id'       => $request->user_id,
+                    //         'note'          => $request->note, 
+                    //         'created_by'    => 0,
+                    //         'created_at'    => date('Y-m-d H:i:s'), 
+                    //         'updated_at'    => null,
+                    //         'status'        => 0 
+                    //     ]; 
 
-                            $token = null;
-                            //retrive token info
-                            $token = Token::select(
-                                    'token.*', 
-                                    'department.name as department', 
-                                    'counter.name as counter', 
-                                    'user.firstname', 
-                                    'user.lastname'
-                                )
-                                ->leftJoin('department', 'token.department_id', '=', 'department.id')
-                                ->leftJoin('counter', 'token.counter_id', '=', 'counter.id')
-                                ->leftJoin('user', 'token.user_id', '=', 'user.id') 
-                                ->where('token.id', $insert_id)
-                                ->first(); 
+                
+                } else {
+                    $saveToken = [
+                        'company_id'    => $companyId,
+                        'token_no'      => $this->newToken($request->department_id, $request->counter_id, $companyId),
+                        'client_mobile' => $request->client_mobile,
+                        'department_id' => $request->department_id,
+                        'section_id'    => $request->section_id ?? 0,
+                        'services'      => json_encode($request->section_id),
+                        'counter_id'    => $request->counter_id, 
+                        'user_id'       => $request->user_id, 
+                        'note'          => $request->note, 
+                        'created_at'    => date('Y-m-d H:i:s'),
+                        'created_by'    => 0,
+                        'updated_at'    => null,
+                        'status'        => 0
+                    ];               
+                }
 
-                            // token serial
-                            $tokenSerial = Token::where('id', '<', $insert_id)->where([
-                                                'company_id'    => $companyId,
-                                                'department_id' => $settings->department_id,
-                                                'counter_id'    => $settings->counter_id, 
-                                                'section_id'    => $settings->section_id,
-                                                'user_id'       => $settings->user_id,
-                                                'status'        =>  0
-                                            ])->count();
+                // $settings = TokenSetting::select('counter_id','section_id','department_id','user_id','created_at')
+                //             ->where('department_id', $request->department_id)
+                //             ->whereIn('section_id', $request->section_id)
+                //             ->get();
 
-                            $avgTime = (int)($this->getAverageTimeOfCompletingToken($settings->user_id,$companyId) * $tokenSerial);
-                            $nextTime = $avgTime + 2;
+                $token = Token::create($saveToken);
+                
+                // foreach($settings as $item)
+                // {
+                //     DB::table('token_services')->create([
+                //         'token_id'  =>  $token->id,
+                //         'service_id'    =>  $item->section_id,
+                //         'counter_id'    =>  $item->counter_id,
+                //         'user_id'    =>  $item->user_id,
+                //         'status'    =>  0,
+                //         'created_at'    =>  now(),
+                //         'updated_at'    =>  null,
+                //     ]);
 
-                            DB::commit();
-                            $data['status'] = true;
-                            $data['message'] = trans('app.token_generate_successfully');
-                            $data['token']  = $token;
-                            $data['title']  = companyDetails($companyId)->title;
-                            $data['serial'] = $tokenSerial;
-                            $data['tokenInfo'] = $saveToken;
-                            $data['tokenInfo']['rowId'] = $insert_id;
-                            $data['tokenInfo']['title'] = companyDetails($companyId)->title;
-                            $data['tokenInfo']['section'] = Section::find($request->section_id)->name ?? 'none';
-                            $data['tokenInfo']['aprx_time'] = $avgTime . " to " . $nextTime;
-                            
-                        } else {
-                            $data['status'] = false;
-                            $data['exception'] = trans('app.please_try_again');
-                        }
+                // }
+
+                //store in database  
+                //set message and redirect
+                if ($token) { 
+
+                    // $token = null;
+                    // //retrive token info
+                    // $token = Token::select(
+                    //         'token.*', 
+                    //         'department.name as department', 
+                    //         'counter.name as counter',
+                    //         'sections.name as section',
+                    //         'user.firstname',
+                    //         'user.lastname'
+                    //     )
+                    //     ->leftJoin('department', 'token.department_id', '=', 'department.id')
+                    //     ->leftJoin('sections', 'token.section_id', '=', 'sections.id')
+                    //     ->leftJoin('counter', 'token.counter_id', '=', 'counter.id')
+                    //     ->leftJoin('user', 'token.user_id', '=', 'user.id') 
+                    //     // ->where('token.id', $insert_id)
+                    //     ->first(); 
+
+                    // token serial
+                    $tokenSerial = Token::where('id', '<', $token->id)->where([
+                                        'company_id'    => $companyId,
+                                        'department_id' => $settings->last()->department_id,
+                                        'counter_id'    => $settings->last()->counter_id, 
+                                        'section_id'    => $settings->last()->section_id,
+                                        'user_id'       => $settings->last()->user_id,
+                                        'status'        =>  0
+                                    ])->count();
+
+                    $avgTime = (int)($this->getAverageTimeOfCompletingToken($settings->last()->user_id,$companyId) * $tokenSerial);
+                    $nextTime = $avgTime + 2;
+
+                    if(!is_null($token->services))
+                    {
+                        $services = Section::whereIn('id', json_decode($token->services))->pluck('name')->toArray();
+                    }
+                    
+
+                    DB::commit();
+                    $data['status'] = true;
+                    $data['message'] = trans('app.token_generate_successfully');
+                    $data['token']  = $token;
+                    $data['title']  = companyDetails($companyId)->title;
+                    $data['serial'] = $tokenSerial;
+                    $data['services'] = $services ?? null;
+                    $data['tokenInfo']['rowId'] = $token->id;
+                    $data['tokenInfo']['title'] = companyDetails($companyId)->title;
+                    $data['tokenInfo']['aprx_time'] = $avgTime . " to " . $nextTime;
+                    
+                } else {
+                    $data['status'] = false;
+                    $data['exception'] = trans('app.please_try_again');
+                }
             }
             
             // return $data;
@@ -373,28 +383,116 @@ class FrontendController extends Controller
     }
 
 
-    public function getSection(Request $request)
+    public function guestAutoTokenEdit($tokenId)
     {
-        $rows = TokenSetting::where('department_id', $request->departmentId)->latest()->get();
-        $sectionArr = [];
-
-        if($rows->count() > 0)
+        if($token = Token::find($tokenId))
         {
-            $html = "<div class=\"form-group\">
-                <label for=\"key\">Select a ".trans('app.service')." <i class=\"text-danger\">*</i></label><br/>
-                <select name=\"section_id\" class=\"form-control\">";
+            $sectionArr = [];
+            $sections = [];
+            $rows = TokenSetting::where('department_id', $token->department_id)->latest()->get();
 
             foreach($rows as $row)
             {
                 if(!in_array($row->section_id, $sectionArr))
                 {   
                     array_push($sectionArr, $row->section_id); // store the section
-                    $section = Section::find($row->section_id);
-                    $html .= "<option value=\"{$section->id}\">{$section->name}</option>";
+                    $sections[] = Section::find($row->section_id);
                 }
             }
 
-            $html .= "</select><small class=\"text-danger\">This field is required</small></div>";
+            $data['token'] = $token;
+            $data['sections'] = $sections;
+
+            return view('guest.editToken', compact('data'));
+        }
+        else
+        {
+            return abort(403, "Token Not Found");
+        }
+        
+    }
+
+
+    public function guestAutoTokenUpdate(Request $request)
+    {
+        $request->validate([
+            'section_id'    =>  ['required'],
+            'time'          =>  ['required'],
+            'note'          =>  ['required'],
+        ]);
+
+        
+        if($token = Token::find($request->tokenId))
+        {
+            $settings = TokenSetting::select('counter_id','section_id','department_id','user_id','created_at')
+                            ->where('department_id', $token->department_id)
+                            ->where('section_id', $request->section_id)
+                            ->first();
+
+            $saveToken = [
+                'company_id'    => $token->company_id,
+                'token_no'      => $this->newToken($settings['department_id'], $settings['counter_id'], $token->company_id),
+                'client_mobile' => $token->client_mobile,
+                'department_id' => $settings->department_id,
+                'section_id'    => $settings->section_id ?? 0,
+                'counter_id'    => $settings->counter_id,
+                'user_id'       => $settings->user_id,
+                'note'          => $request->note, 
+                'note2'          => $request->note2, 
+                'created_by'    => 0,
+                'created_at'    => date('Y-m-d'). ' ' . date('H:i:s', strtotime($request->time)),
+                'updated_at'    => null,
+                'status'        => 0 
+            ]; 
+
+            //store in database  
+            //set message and redirect
+            if ($insert_id = Token::insertGetId($saveToken)) { 
+
+                $token->delete(); //  delete old token
+                //retrive token info
+                $token = Token::find($insert_id);
+            }
+
+            $tokenSerial = Token::where('id', '<', $token->id)->where([
+                                'company_id'    => $token->company_id,
+                                'department_id' => $token->department_id,
+                                'counter_id'    => $token->counter_id, 
+                                'section_id'    => $token->section_id,
+                                'user_id'       => $token->user_id,
+                                'status'        =>  0
+                            ])->count();
+
+            $avgTime = (int)($this->getAverageTimeOfCompletingToken($token->user_id,$token->company_id) * $tokenSerial);
+            $nextTime = $avgTime + 2;
+
+            $data['apx_time'] = $avgTime . " to " . $nextTime;
+            $data['serial'] = $tokenSerial;
+            return view('guest.token', compact('data', 'token'));
+        }
+        else
+        {
+            return abort(403, "Token Not Found");
+        }
+    }
+
+
+    public function getSection(Request $request)
+    {
+        $rows = TokenSetting::where('department_id', $request->departmentId)->latest()->get();
+
+        if($rows->count() > 0)
+        {
+            $html = '';
+            foreach($rows as $row)
+            {
+                $sections = Section::whereIn('id',json_decode($row->services))->pluck('name', 'id');
+
+                foreach($sections as $id => $val)
+                {
+                    $html .= "<option value=\"{$id}\">{$val}</option>";
+                }
+            }
         }
 
         return response()
@@ -470,8 +568,6 @@ class FrontendController extends Controller
 
     public function guestTokenSerial(Request $request)
     {
-        // return $request;
-
         // token serial
         $tokenSerial = Token::where('id', '<=', $request->rowId)
                         ->where([
@@ -493,7 +589,7 @@ class FrontendController extends Controller
                 if($token->sms_status == 0)
                 {
                     $message = "Next is your turn on ".$request->companyName;
-                    $response = sendSMSByTwilio($request->mobile, $message);
+                    $response = sendSMSByTwilioForSerial($request->mobile, $message);
                 
                     $sms = new SmsHistory;
                     $sms->company_id  = $request->companyId;

@@ -82,7 +82,7 @@ class DisplayController extends Controller
             FROM (
                     SELECT t.* 
                     FROM token t 
-                    WHERE t.status = 0 AND t.company_id = $company_id
+                    WHERE t.status = 0 AND t.company_id = $company_id AND t.is_serving = 1
                     ORDER BY t.is_vip DESC, t.id ASC 
                     LIMIT 8
                 ) AS token
@@ -92,7 +92,7 @@ class DisplayController extends Controller
                 counter ON counter.id = token.counter_id
             LEFT JOIN 
                 user ON user.id = token.user_id       
-            WHERE token.created_at <= '".date("Y-m-d")."'     
+            WHERE CAST(token.created_at AS DATE) = '".date("Y-m-d")."'
             ORDER BY token.is_vip DESC, token.id ASC
         ");
 
@@ -305,7 +305,7 @@ class DisplayController extends Controller
                     LEFT JOIN 
                         user ON user.id = token.user_id
                     WHERE token.company_id = $company_id
-                    AND token.created_at <= '".date("Y-m-d")."'
+                    AND  CAST(token.created_at AS DATE) = '".date("Y-m-d")."'
                     ORDER BY token.is_vip ASC, token.id DESC
                     LIMIT 5
                 ");
@@ -505,7 +505,7 @@ class DisplayController extends Controller
                 LEFT JOIN 
                     user ON user.id = token.user_id
                 WHERE token.company_id = $company_id
-                AND token.created_at <= '".date("Y-m-d")."'
+                AND  CAST(token.created_at AS DATE) = '".date("Y-m-d")."'
                 ORDER BY token.is_vip ASC, token.id DESC
                 LIMIT 5
             ");
@@ -700,7 +700,7 @@ class DisplayController extends Controller
                 ->where("t.counter_id", $counter->id)
                 ->where("t.status", "0")
                 ->where('t.company_id', auth()->user()->company_id)
-                ->where('t.created_at', '<=', date('Y-m-d'))
+                ->whereDate('t.created_at', date('Y-m-d'))
                 ->orderBy('t.is_vip', 'DESC')
                 ->orderBy('t.id', 'ASC')
                 ->first();
@@ -883,7 +883,7 @@ class DisplayController extends Controller
                 counter ON counter.id = token.counter_id
             LEFT JOIN 
                 user ON user.id = token.user_id      
-            WHERE token.created_at <= '".date('Y-m-d')."'      
+            WHERE  CAST(token.created_at AS DATE) = '".date("Y-m-d")."'  
             ORDER BY token.is_vip DESC, token.id ASC
         ");
 

@@ -14,13 +14,12 @@
     <div class="container">
         <div class="row">
             <div class="col text-center">
-
-                <div class="card p-5">
+                <div class="card shadow">
                     <div class="card-body">
                         <h4>{{companyDetails($token->company_id)->title}}</h4>
                         <h1 class="my-3">{{$token->token_no}}</h1>
 
-                        <p class="mb-3">{!!$data['serial']!!}</p>
+                        <p class="mb-3">{!!$data['serial']!!} <b>person left</b></p> 
                         <h5 class="text-success">Aproximate waiting time: <span class="text-danger">{{$data['apx_time']}}</span> minutes</h5>
 
                         <p class="m-0"><b>Location:</b> {{$token->department->name ?? ''}}</p>

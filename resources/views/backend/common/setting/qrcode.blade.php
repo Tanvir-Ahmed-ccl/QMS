@@ -1,5 +1,5 @@
 @extends('layouts.backend')
-@section('title', 'QR Code')
+@section('title', 'Remote Queue')
 
 @section('content')
 

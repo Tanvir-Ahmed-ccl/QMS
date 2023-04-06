@@ -10,6 +10,7 @@ use App\Models\AppSettings;
 use App\Models\Plan;
 use App\Models\Setting;
 use App\Models\SmsHistory;
+use App\Models\SMSPackage;
 use App\Models\StripePayment;
 use App\Models\User;
 use Carbon\Carbon;
@@ -69,7 +70,8 @@ class SettingController extends Controller
             'address'     => 'max:255',
             'copyright_text' => 'max:255',
             'lang'        => 'max:3',
-            'timezone'    => 'required|max:100' 
+            'timezone'    => 'required|max:100',
+            'reminder_for_booking'  => 'numeric'
         ])
         ->setAttributeNames(array(
            'title' => trans('app.title'),
@@ -132,6 +134,8 @@ class SettingController extends Controller
                         'closing_time'    => $request->closing_time,
                         'day_offs'      => ($request->has('day_offs')) ? json_encode($request->day_offs) : null,
                         'disable_msg'    => $request->disable_msg,
+                        'reminder_for_booking'    => $request->reminder_for_booking,
+                        'announcement'    => $request->announcement,
                     ]);
 
                 if ($update) 
@@ -170,17 +174,17 @@ class SettingController extends Controller
         $toDate = Carbon::parse(now());
         $fromDate = Carbon::parse($company->created_at);
         $daysDiff = $toDate->diffInDays($fromDate);
+
         $subcriptionPlan = Auth::user()->company->subscription_plan;
         $plans = Plan::where('status', true)->get();
+        $SMSplans = SMSPackage::where('status', true)->get();
 
-        $toDate = Carbon::parse(now());
-        $fromDate = Carbon::parse($company->created_at);
-        $trialDays = $toDate->diffInDays($fromDate);
+        $trialDays = $daysDiff;
 
         
         if(is_null($subcriptionPlan))
         {            
-            return view('backend.admin.setting.plans')->with(compact('plans', 'trialDays'));
+            return view('backend.admin.setting.plans')->with(compact('plans', 'trialDays', 'SMSplans'));
         }
         else
         {
@@ -194,7 +198,7 @@ class SettingController extends Controller
             $daysDiff = $toDate->diffInDays($fromDate);
             $daysDiff = ($daysDiff == 0) ? 'Over' : $daysDiff;
         
-            return view('backend.admin.setting.plans')->with(compact('plans', 'currentPlan', 'smsLimit', 'daysDiff'));
+            return view('backend.admin.setting.plans')->with(compact('plans', 'currentPlan', 'smsLimit', 'daysDiff', 'SMSplans'));
         }
 
         
@@ -212,7 +216,7 @@ class SettingController extends Controller
                         "amount"    => $request->amount * 100,
                         "currency"  => AppSettings::first()->CURRENCY_CODE,
                         "source"    => $request->stripeToken,
-                        "description" => "Payment for subscription from contentforms.com.",
+                        "description" => "Payment for subscription from contentforms.com",
                     ]);
         }catch(Exception $e){
             return back()->with('info', $e->getMessage());
@@ -240,7 +244,6 @@ class SettingController extends Controller
                 $user->subscription_plan = $request->plan_id;
                 $user->subscribe_at = now();
                 $user->subscribe_out = Carbon::now()->addDays(30);
-                $user->sms_limit += Plan::find($request->plan_id)->sms_limit;
                 $user->save();
 
                 Mail::to($user->email)->send(new Subscription([
@@ -269,7 +272,7 @@ class SettingController extends Controller
 
             \QrCode::size(200)
             ->format('png')
-            ->generate('https://gokiiw.net/qr/'.$token, public_path('images/qrcode-'.$token.'.png'));
+            ->generate("hello.com", public_path('images/qrcode-'.$token.'.png'));
 
             User::find($company->id)->update(['token' => $token, 'qrcode' => 'images/qrcode-'.$token.'.png']);
         }

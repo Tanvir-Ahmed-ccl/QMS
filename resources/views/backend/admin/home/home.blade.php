@@ -107,7 +107,7 @@
 @endsection
  
 @push("scripts")
-<script src="{{ asset('public/assets/js/Chart.min.js') }}"></script>
+<script src="{{ asset('assets/js/Chart.min.js') }}"></script>
 <script type="text/javascript"> 
 $(window).on('load', function(){
 

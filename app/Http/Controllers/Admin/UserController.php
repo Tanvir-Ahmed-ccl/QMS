@@ -3,13 +3,15 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller; 
 use Illuminate\Http\Request;
-use App\Http\Requests; 
+use App\Http\Requests;
+use App\Mail\InviteOfficerMail;
 use Illuminate\Support\Facades\Storage;
 use App\Models\User;
 use App\Models\Token;
 use App\Models\Department; 
 use DB, Hash, Image, Validator;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Mail;
 
 class UserController extends Controller
 { 
@@ -245,6 +247,19 @@ class UserController extends Controller
         	]);
 
         	if ($save) {
+
+                // send otp in email address
+                Mail::to($request->email)->send(new InviteOfficerMail([
+                        'company_name'  => companyDetails(auth()->user()->company_id)->title,
+                        'username'  =>  $request->firstname . " " . $request->lastname,
+                        'email'     =>  $request->email,
+                        'password'  =>  $request->conf_password,
+                        'loginUrl'  =>  url('') . "/login",
+                        'baseUrl'   => url('')
+                    ]
+                ));
+
+
 	            return back()
                     ->withInput()  
                     ->with('photo', $filePath)

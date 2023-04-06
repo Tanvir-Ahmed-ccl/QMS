@@ -128,10 +128,24 @@ class AjaxController extends Controller
             {
                 DB::table("otps")->where(['phone' => $request->phone, 'otp' => $request->otp])->delete();
 
+                // check customer phone number is already exists or not
+                $token = Token::where('client_mobile', $request->phone)
+                        ->where('status', 0)
+                        ->whereDate('created_at', today());
+                
+                if($token->exists()):
+                $data['phoneExists'] = 1;
+                $data['tokenId'] = $token->first()->id;
+                else:
+                $data['phoneExists'] = 0;
+                $data['tokenId'] = null;
+                endif;
+
                 return response()
                 ->json([
                     'success' =>    1,
                     'message'   =>  "OTP Matched Successfully",
+                    'data'  =>  $data
                 ]); 
             }
 

@@ -1,6 +1,11 @@
 @extends('guest.layout')
 @section('title', trans('app.auto_token'))
 
+@push('styles')
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/assets/owl.carousel.min.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.4/font/bootstrap-icons.css">
+@endpush
+
 @section('content')
 <style>
     .btn{
@@ -31,13 +36,31 @@
                                         // 'counter_id'    => $department->counter_id, 
                                         // 'user_id'       => $department->user_id,
                                         'status'        =>  0
-                                    ])->count() }} People in Queue</h6>
+                                    ])->whereDate('created_at', date("Y-m-d"))->count() }} People in Queue</h6>
                         {{-- <h6>{{ $department->officer }}</h6> --}}
                 </button>  
             </div>
             @endforeach  
-            <!--Ends of With Mobile No -->            
+            <!--Ends of With Mobile No -->   
+            
+            
         </div>  
+
+        <div class="row" style="margin-top: 20px">
+            <div class="col-12">
+                <div class="owl-carousel owl-theme">
+                    @forelse (\App\Ads::selfData($company->company_id) as $item)
+                        <div class="item">
+                            <a href="{{$item->link}}" target="_blank">
+                                <img src="{{asset($item->images)}}" alt="banner" class="img-fluid" style="height: 300px; width: 800px;">
+                            </a>
+                        </div>
+                    @empty
+                        
+                    @endforelse
+                </div>
+            </div>
+        </div>
     </div> 
 </div>  
 
@@ -75,7 +98,13 @@
 
             <input name="client_mobile" type="hidden" id="success_mobile" class="form-control">
             
-            <div id="ajax-section-load"></div>
+            <p >
+                <label for="">Services</label>
+                <select name="section_id[]" id="ajax-section-load" class="form-control" multiple>
+                    <option value="">Select Option</option>
+                </select>
+                <span class="text-danger">This field is required</span>
+            </p>
 
             <p>
                 <input 
@@ -121,6 +150,31 @@
 
 @endsection
 
+@push('scripts')
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/owl.carousel.min.js"></script>
+    <script>
+        $('.owl-carousel').owlCarousel({
+            loop:true,
+            margin:10,
+            nav:true,
+            autoplay:true,
+            autoplayTimeout:3000,
+            autoplayHoverPause:true,
+            responsive:{
+                0:{
+                    items:1
+                },
+                600:{
+                    items:1
+                },
+                1000:{
+                    items:1
+                }
+            }
+        })
+    </script>
+@endpush
+
 @push("scripts")
 <script>
 
@@ -139,6 +193,7 @@
             },
             success: (res) => {
                 // console.log(res);
+                
                 if(res.success == 1)
                 {
                     $("#sendOtpBtn").text("Resend OTP")
@@ -173,9 +228,16 @@
             success: function(res){
                 if(res.success == 1)
                 {
-                    $("#otp-form").hide();
-                    $("#after-otp").css("display", "block");
-                    $("#success_mobile").val(phone)
+                    if(res.data.phoneExists == 1)
+                    {
+                        location.replace("{{url('')}}/guest/token/edit/"+res.data.tokenId);
+                    }
+                    else
+                    {
+                        $("#otp-form").hide();
+                        $("#after-otp").css("display", "block");
+                        $("#success_mobile").val(phone);
+                    }
                 }
                 else
                 {
@@ -200,7 +262,7 @@
                 // console.log(res);
                 if(res.items > 0)
                 {
-                    $("#ajax-section-load").html(res.html);
+                    $("#ajax-section-load").append(res.html);
                 }
                 else
                 {
@@ -318,7 +380,7 @@
                 {
                     if(confirm("Are you sure! You want to join again?"))
                     {
-                        ajax_request(formData);
+                        location.replace("{{url('')}}/guest/token/edit/"+res.tokenId);
                     }
                 }
                 else
@@ -360,11 +422,28 @@
                     content += "<div class=\"receipt-token\">";
                     content += "<h4>"+data.title+"</h4>";
                     content += "<h1>"+data.token.token_no+"</h1>";
+
+                    if(data.services != null)
+                    {
+                        content += `<div style="display:flex;justify-content:center;align-items:center;margin-bottom:10px" class="d-flex justify-content-center align-items-center mb-3">`;
+                        
+                        data.services.forEach((value, key) => {
+                            content += `<button class="btn btn-sm btn-primary fw-bolder">${value}</button>`;
+
+                            if(data.services.length < ++key)
+                            {
+                                content += `<i class="bi bi-arrow-right my-auto mx-4" style="font-size: 24px"></i>`;
+                            }
+                        });
+
+                        content += `</div>`;
+                    }                   
+
                     content +="<ul class=\"list-unstyled\">";
                     content += "<li><p id=\"token-headr\"><strong class=\"text-success h3\" id=\"token-serial\">"+data.serial+"</strong> person left</p></li>";
                     content += "<li><p><strong class=\"text-success h4\">Approximate waiting time: <b> <span class=\"text-danger\" id=\"apx_time\">"+data.tokenInfo.aprx_time+"</span> </b> minutes</strong></p></li>";
                     content += "<li><strong>{{ trans('app.department') }} </strong>"+data.token.department+"</li>";
-                    content += "<li><strong>{{ trans('app.service') }} </strong>"+data.tokenInfo.section+"</li>";
+                    content += "<li><strong>{{ trans('app.service') }} </strong>"+data.token.section+"</li>";
                     content += "<li><strong>{{ trans('app.counter') }} </strong>"+data.token.counter+"</li>";
                     content += "<li><strong>{{ trans('app.officer') }} </strong>"+data.token.firstname+' '+data.token.lastname+"</li>";
                     content += "<li><strong>{{ trans('app.date') }} </strong>"+data.token.created_at+"</li>";

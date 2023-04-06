@@ -18,6 +18,31 @@ function companyDetails($companyId)
     return $company;
 }
 
+/**
+ * get services name
+ * 
+ * @return string
+ */
+function services($serv, $returnType = "str", $column = 'name')
+{
+    if(!is_array($serv))
+    {
+        $serv = json_decode($serv);
+    }
+
+    $names = \App\Models\Section::whereIn('id', $serv)->pluck($column)->toArray();
+
+    if($returnType == "str" || $returnType == "string"):
+
+        return implode(", ", $names);
+
+    elseif($returnType == "array"):
+
+        return $names;
+        
+    endif;
+}
+
 function companyToken($companyId)
 {
     $company = \App\Models\User::find($companyId);
@@ -51,9 +76,51 @@ function UserRoles()
 }
 
 
-function sendSMSByTwilio($receiverNumber = "01533448761", $message= "Default SMS from gokiiw")
+function sendSMSByTwilio($receiverNumber, $otp)
 {
     try{
+        $message = "Security code for Gokiiw is " . $otp;
+
+        $twilio = \App\Models\AppSettings::first();
+        $account_sid = $twilio->TW_SID;
+        $auth_token = $twilio->TW_TOKEN;
+        $twilio_number = $twilio->TW_FROM;
+
+        $client = new \Twilio\Rest\Client($account_sid, $auth_token);
+        $response = $client->messages->create($receiverNumber, ['from' => $twilio_number, 'body' => $message]);
+
+    }catch(\Exception $e){
+        $response = $e->getMessage();
+    }
+
+    return $response;
+}
+
+function sendSMSByTwilioForBookingReminder($receiverNumber, array $data=[])
+{
+    try{
+        $message = "You have an appointment at {$data['datetime']} in {$data['companyName']}, {$data['location']}";
+
+        $twilio = \App\Models\AppSettings::first();
+        $account_sid = $twilio->TW_SID;
+        $auth_token = $twilio->TW_TOKEN;
+        $twilio_number = $twilio->TW_FROM;
+
+        $client = new \Twilio\Rest\Client($account_sid, $auth_token);
+        $response = $client->messages->create($receiverNumber, ['from' => $twilio_number, 'body' => $message]);
+
+    }catch(\Exception $e){
+        $response = $e->getMessage();
+    }
+
+    return $response;
+}
+
+
+function sendSMSByTwilioForSerial($receiverNumber = "01533448761", $message = "Gokiiw")
+{
+    try{
+        // $message = "Security code for Gokiiw is " . $otp;
 
         $twilio = \App\Models\AppSettings::first();
         $account_sid = $twilio->TW_SID;

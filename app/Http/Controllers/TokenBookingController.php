@@ -2,14 +2,17 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\AppSettings;
 use App\Models\Counter;
 use App\Models\Department;
 use App\Models\DisplaySetting;
 use App\Models\Section;
 use App\Models\Setting;
+use App\Models\SmsHistory;
 use App\Models\Token;
 use App\Models\TokenSetting;
 use App\Models\User;
+use Carbon\Carbon;
 use Illuminate\Http\Client\ResponseSequence;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -170,38 +173,27 @@ class TokenBookingController extends Controller
         $otp = rand(100000, 999999);
         $client_mobile = $request->client_mobile;
 
-        $token = Token::where('status', 0)->where('client_mobile', $request->client_mobile)->where('created_at', '>', date('Y-m-d H:i:m', strtotime(\Carbon\Carbon::now()->addMinutes(5))));
+        $table = DB::table("otps")->where('phone', $client_mobile);
 
-        if(!$token->exists())
+        if($table->exists())
         {
-            $table = DB::table("otps")->where('phone', $client_mobile);
-
-            if($table->exists())
-            {
-                $table->update(['otp'=>$otp, 'created_at'=>now()]);
-            }
-            else
-            {
-                DB::table("otps")->insert([
-                    "phone" =>  $client_mobile,
-                    "otp"   =>  $otp,
-                    "created_at"   => now(),
-                    "updated_at"   =>  now(),
-                ]);
-            }
-
-            $resp = sendSMSByTwilio($client_mobile, "Your One Time Passcode (OTP) is ".$otp." received from Gokiiw");
-            
-
-            return view('bookToken.auth', compact('data', 'client_mobile'));
+            $table->update(['otp'=>$otp, 'created_at'=>now()]);
         }
         else
         {
-            $token = $token->first();
-            $tokenExists = true;
-            return view('bookToken.token', compact('token', 'tokenExists'));
+            DB::table("otps")->insert([
+                "phone" =>  $client_mobile,
+                "otp"   =>  $otp,
+                "created_at"   => now(),
+                "updated_at"   =>  now(),
+            ]);
         }
+
+        $resp = sendSMSByTwilio($client_mobile, $otp);
         
+
+        return view('bookToken.auth', compact('data', 'client_mobile'));
+
     }
 
 
@@ -216,7 +208,7 @@ class TokenBookingController extends Controller
 
             $expiredAt = \Carbon\Carbon::parse($otpRow->created_at)->addMinutes(2);
 
-            if($expiredAt < now())
+            if($expiredAt < now()) // otp expired
             {
                 $status = "OTP Expired";
                 return view('bookToken.auth', compact('data', 'status', 'client_mobile'));
@@ -225,7 +217,16 @@ class TokenBookingController extends Controller
             {
                 DB::table("otps")->where(['phone' => $request->client_mobile, 'otp' => $request->otp])->delete();
 
-                $sections = TokenSetting::select( 
+                $token = Token::where('status', 0)->where('client_mobile', $request->client_mobile)->where('created_at', '>', date('Y-m-d H:i:m', strtotime(\Carbon\Carbon::now()->addMinutes(5))));
+                if($token->exists()) // already token exists
+                {
+                    $token = $token->first();
+                    $tokenExists = true;
+                    return view('bookToken.token', compact('token', 'tokenExists'));
+                }
+                else
+                {
+                    $sections = TokenSetting::select( 
                                 'sections.name',
                                 'sections.id',
                             )
@@ -235,7 +236,8 @@ class TokenBookingController extends Controller
                             ->groupBy('token_setting.section_id')
                             ->get(); 
 
-                return view('bookToken.infoForm', compact('data', 'client_mobile', 'sections'));
+                    return view('bookToken.infoForm', compact('data', 'client_mobile', 'sections'));
+                }
             }
         }
         else
@@ -373,5 +375,63 @@ class TokenBookingController extends Controller
                     ->get(); 
 
         return view('bookToken.infoForm', compact('data', 'client_mobile', 'sections'));
+    }
+
+
+    public function sendReminder()
+    {
+        $tokens = Token::whereDate('created_at', '>=', today())->get();
+
+        foreach($tokens as $token)
+        {
+            $diff_in_minutes = Carbon::createFromFormat('Y-m-d H:s:i', $token->created_at)->diffInMinutes(now());
+
+            $app = Setting::where('company_id', $token->company_id)->first();
+            $beforeMinutes = $app->reminder_for_booking;
+
+            if($diff_in_minutes <= $beforeMinutes)
+            {
+                $sendMsg = DB::table('reminders')->where('type', 'reminder')->where('target_table', 'tokens')->where('target_id'. $token->id);
+
+                $message = "SMS Sended";
+
+                if(!$sendMsg->exists()):
+
+                    $response = sendSMSByTwilioForBookingReminder($token->client_mobile, [
+                                    'datetime'  =>  date("Y-m-d H:i:s", strtotime($token->created_at)),
+                                    'companyName'   =>  $app->title,
+                                    'location'      =>  $token->department->name
+                                ]);
+
+                    $sms = new SmsHistory;
+                    $sms->company_id  = $token->companyId;
+                    $sms->from        = AppSettings::first()->TW_FROM;
+                    $sms->to          = $token->client_mobile;
+                    $sms->message     = "Send Reminder for booked appointment";
+                    $sms->response    = $response;
+                    $sms->created_at  = date('Y-m-d H:i:s');
+                    $sms->save();
+
+                    DB::table('reminders')->insert([
+                        'type'  => 'reminder',
+                        'created_at'    =>  date('Y-m-d H:i:s'),
+                        'updated_at'    =>  date('Y-m-d H:i:s'),
+                        'target_table'  =>  'tokens',
+                        'target_id'  =>  $token->id,
+                    ]);
+
+                    $message = $sms->message;
+                endif;
+            }
+
+            echo "Token No: {$token->token_no} <br/>";
+            echo "Client Mobile: {$token->client_mobile} <br/>";
+            echo "Date: {$token->created_at} <br/>";
+            echo "Message: $message <br/>";
+            echo "==================================================== <br/>";
+        }
+
+
+        return "Cron Job Running successfully";
     }
 }

@@ -8,29 +8,29 @@
         <!-- favicon -->
         <link rel="shortcut icon" href="{{ asset(Session::get('app.favicon')) }}" type="image/x-icon" />
         <!-- template bootstrap -->
-        <link href="{{ asset('public/assets/css/template.min.css') }}" rel='stylesheet prefetch'>
+        <link href="{{ asset('assets/css/template.min.css') }}" rel='stylesheet prefetch'>
         <!-- roboto -->
-        <link href="{{ asset('public/assets/css/roboto.css') }}" rel='stylesheet'>
+        <link href="{{ asset('assets/css/roboto.css') }}" rel='stylesheet'>
         <!-- material-design -->
-        <link href="{{ asset('public/assets/css/material-design.css') }}" rel='stylesheet'>
+        <link href="{{ asset('assets/css/material-design.css') }}" rel='stylesheet'>
         <!-- small-n-flat -->
-        <link href="{{ asset('public/assets/css/small-n-flat.css') }}" rel='stylesheet'>
+        <link href="{{ asset('assets/css/small-n-flat.css') }}" rel='stylesheet'>
         <!-- font-awesome -->
-        <link href="{{ asset('public/assets/css/font-awesome.min.css') }}" rel='stylesheet'>
+        <link href="{{ asset('assets/css/font-awesome.min.css') }}" rel='stylesheet'>
         <!-- jquery-ui -->
-        <link href="{{ asset('public/assets/css/jquery-ui.min.css') }}" rel='stylesheet'>
+        <link href="{{ asset('assets/css/jquery-ui.min.css') }}" rel='stylesheet'>
         <!-- datatable -->
-        <link href="{{ asset('public/assets/css/dataTables.min.css') }}" rel='stylesheet'>
+        <link href="{{ asset('assets/css/dataTables.min.css') }}" rel='stylesheet'>
         <!-- select2 -->
-        <link href="{{ asset('public/assets/css/select2.min.css') }}"  rel='stylesheet'>
+        <link href="{{ asset('assets/css/select2.min.css') }}"  rel='stylesheet'>
         <!-- custom style -->
-        <link href="{{ asset('public/assets/css/style.css') }}" rel='stylesheet'>
+        <link href="{{ asset('assets/css/style.css') }}" rel='stylesheet'>
         <!-- Page styles --> 
         @stack('styles')
 
 
         <!-- Jquery  -->
-        <script src="{{ asset('public/assets/js/jquery.min.js') }}"></script>
+        <script src="{{ asset('assets/js/jquery.min.js') }}"></script>
     </head>
     <body class="cm-no-transition cm-1-navbar loader-process">
         @include('backend.common.info')
@@ -380,13 +380,19 @@
 
                             @if(\App\AddonUsesHistory::where('user_id', companyOwner(Auth::id())->id)->where('addon_id', 2)->exists())
                             <li class="{{ (Request::is('qrcode') ? 'active' : '') }}">
-                                <a href="{{ url('qrcode') }}" class="sf-star">QR CODE</a>
+                                <a href="{{ url('qrcode') }}" class="sf-star">Remote Queue</a>
                             </li>
                             @endif
 
                             @if(\App\AddonUsesHistory::where('user_id', companyOwner(Auth::id())->id)->where('addon_id', 1)->exists())
+                            <li class="{{ (Request::is('admin/book') ? 'active' : '') }}">
+                                <a href="{{ route('book.index') }}" class="sf-star">Book Appointment</a>
+                            </li>
+                            @endif
+
+                            @if(\App\AddonUsesHistory::where('user_id', companyOwner(Auth::id())->id)->where('addon_id', 3)->exists())
                             <li class="{{ (Request::is('qrcode') ? 'active' : '') }}">
-                                <a href="{{ route('book.index') }}" class="sf-star">Book Apoinment</a>
+                                <a href="{{ url('admin/advertisement') }}" class="sf-star">Advertisement</a>
                             </li>
                             @endif
 
@@ -547,23 +553,23 @@
 
         <!-- All js -->
         <!-- bootstrp -->
-        <script src="{{ asset('public/assets/js/bootstrap.min.js') }}"></script> 
+        <script src="{{ asset('assets/js/bootstrap.min.js') }}"></script> 
         <!-- select2 -->
-        <script src="{{ asset('public/assets/js/select2.min.js') }}"></script>
+        <script src="{{ asset('assets/js/select2.min.js') }}"></script>
         <!-- juery-ui -->
-        <script src="{{ asset('public/assets/js/jquery-ui.min.js') }}"></script> 
+        <script src="{{ asset('assets/js/jquery-ui.min.js') }}"></script> 
         <!-- jquery.mousewheel.min -->
-        <script src="{{ asset('public/assets/js/jquery.mousewheel.min.js') }}"></script>
+        <script src="{{ asset('assets/js/jquery.mousewheel.min.js') }}"></script>
         <!-- jquery.cookie.min -->
-        <script src="{{ asset('public/assets/js/jquery.cookie.min.js') }}"></script>
+        <script src="{{ asset('assets/js/jquery.cookie.min.js') }}"></script>
         <!-- fastclick -->
-        <script src="{{ asset('public/assets/js/fastclick.min.js') }}"></script>
+        <script src="{{ asset('assets/js/fastclick.min.js') }}"></script>
         <!-- template -->
-        <script src="{{ asset('public/assets/js/template.js') }}"></script>
+        <script src="{{ asset('assets/js/template.js') }}"></script>
         <!-- datatable -->
-        <script src="{{ asset('public/assets/js/dataTables.min.js') }}"></script>
+        <script src="{{ asset('assets/js/dataTables.min.js') }}"></script>
         <!-- custom script -->
-        <script src="{{ asset('public/assets/js/script.js') }}"></script>
+        <script src="{{ asset('assets/js/script.js') }}"></script>
         
         <!-- Sweet Alert -->
         <script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>

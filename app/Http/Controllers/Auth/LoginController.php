@@ -98,7 +98,7 @@ class LoginController extends Controller
 
                     if(!is_null($phone)){
                         //Send otp in mobile
-                        sendSMSByTwilio($phone, "Your One Time Passcode (OTP) is ".$otp." received from Gokiiw");
+                        sendSMSByTwilio($phone, $otp);
                     }
                 }catch(Exception $e){                    
                     $msg = 'Exception Message: '. $e->getMessage();
@@ -193,7 +193,7 @@ class LoginController extends Controller
 
             if(!is_null($phone)){
                 //Send otp in mobile
-                sendSMSByTwilio($phone, "Your One Time Passcode (OTP) is ".$otp." received from Gokiiw");
+                sendSMSByTwilio($phone, $otp);
             }
 
         }catch(Exception $e){                    

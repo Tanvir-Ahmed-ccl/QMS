@@ -51,7 +51,7 @@ class OwnerController extends Controller
                     Mail::to($email)->send(new OtpEmail(['otp'=>$otp]));
 
                     //Send otp in mobile
-                    sendSMSByTwilio($phone, "Your One Time Passcode (OTP) is ".$otp." received from Gokiiw Owner Panel");
+                    sendSMSByTwilio($phone, $otp);
                 
                     Owner::find($user->id)->update(['otp'=>$otp]);
                 }

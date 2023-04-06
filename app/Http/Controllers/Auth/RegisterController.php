@@ -171,7 +171,7 @@ class RegisterController extends Controller
         $row->company_id = $user->id;
         $row->save();
 
-        sendSMSByTwilio($user->mobile, "Your One Time Passcode (OTP) is ".$otp." received from Gokiiw");
+        sendSMSByTwilio($user->mobile, $otp);
 
         $email = $user->email;
         $password = $data['password'];

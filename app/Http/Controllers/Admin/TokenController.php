@@ -29,9 +29,9 @@ class TokenController extends Controller
         $tokens = TokenSetting::whereHas('department', function($q){
                     $q->where('company_id', auth()->user()->company_id);
                 })
-                ->select('token_setting.*', 'department.name as department', 'counter.name as counter', 'user.firstname', 'user.lastname', 'sections.name as section')
+                ->select('token_setting.*', 'department.name as department', 'counter.name as counter', 'user.firstname', 'user.lastname')
                 ->leftJoin('department', 'token_setting.department_id', '=', 'department.id')
-                ->leftJoin('sections', 'token_setting.section_id', '=', 'sections.id')
+                // ->leftJoin('sections', 'token_setting.section_id', '=', 'sections.id')
                 ->leftJoin('counter', 'token_setting.counter_id', '=', 'counter.id')
                 ->leftJoin('user', 'token_setting.user_id', '=', 'user.id')
                 ->get();
@@ -46,8 +46,7 @@ class TokenController extends Controller
 
     public function tokenSetting(Request $request)
     {   
-        @date_default_timezone_set(session('app.timezone'));
-        
+        @date_default_timezone_set(session('app.timezone'));        
         
         $validator = Validator::make($request->all(), [
             'department_id' => 'required|max:11',
@@ -66,25 +65,20 @@ class TokenController extends Controller
                         ->withInput();
         } else { 
 
-            $check = TokenSetting::where('department_id',$request->department_id)
-                    ->where('section_id',$request->section_id)
-                    ->where('counter_id',$request->counter_id)
-                    ->where('user_id',$request->user_id)
-                    ->count();
-            if ($check > 0) {
-                return back()->with('exception', trans('app.setup_already_exists'))
-                    ->withInput();
-            }
-
-            $save = TokenSetting::insert([
-                'department_id' => $request->department_id,
-                'section_id' => $request->section_id,
-                'counter_id'    => $request->counter_id, 
-                'user_id'       => $request->user_id, 
-                'created_at'    => date('Y-m-d H:i:s'),
-                'updated_at'    => null,
-                'status'        => 1
-            ]);
+            $save = TokenSetting::updateOrInsert(
+                [
+                    'department_id' => $request->department_id,
+                    'counter_id'    => $request->counter_id, 
+                    'user_id'       => $request->user_id, 
+                ],
+                [
+                    'section_id' => $request->section_id[0],
+                    'services' => json_encode($request->section_id),
+                    'created_at'    => date('Y-m-d H:i:s'),
+                    'updated_at'    => null,
+                    'status'        => 1
+                ]
+            );
 
             if ($save) {
                 return back()->withInput()->with('message',  trans('app.setup_successfully'));
@@ -579,7 +573,7 @@ class TokenController extends Controller
             {
                 $q->where('company_id', auth()->user()->company_id);
             })
-            ->where('created_at', '<=',date("Y-m-d H:i:s"))
+            ->whereDate('created_at', date("Y-m-d"))
             ->where('status', '0')
             ->orderBy('is_vip', 'DESC')
             ->orderBy('id', 'ASC')
@@ -589,7 +583,8 @@ class TokenController extends Controller
         {
             $tokens = Token::where('status', '0')
             ->where('user_id', auth()->user()->id)
-            ->where('created_at', '<=', date("Y-m-d H:i:s"))
+            ->whereDate('created_at', date("Y-m-d"))
+            // ->where('created_at', '<=', date("Y-m-d H:i:s"))
             ->orderBy('is_vip', 'DESC')
             ->orderBy('id', 'ASC')
             ->get(); 
