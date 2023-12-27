@@ -49,15 +49,23 @@
 
             <div class="form-group @error('user_type') has-error @enderror">
                 <label for="user_type">{{ trans('app.user_type') }} <i class="text-danger">*</i></label><br/>
-                {{ Form::select('user_type', UserRoles()->pluck('name', 'id'), (old('user_type')?old('user_type'):$user->user_type), ['placeholder' => trans('app.select_option'), 'class'=>'select2 form-control', 'id'=>'user_type']) }}
+                {{-- {{ Form::select('user_type', UserRoles()->pluck('name', 'id'), (old('user_type')?old('user_type'):$user->userRole->name), ['placeholder' => trans('app.select_option'), 'class'=>'select2 form-control', 'id'=>'user_type']) }} --}}
+
+                <select name="user_type" class="select2 form-control">
+                    @foreach (UserRoles()->pluck('name', 'id') as $key => $item)
+                        <option value="{{$key}}" {{ ($key == $user->user_role_id) ? 'selected' : '' }} >{{$item}}</option>
+                    @endforeach
+                </select>
                 <span class="text-danger">{{ $errors->first('user_type') }}</span>
             </div>
 
-            {{-- <div class="form-group hide @error('department_id') has-error @enderror" id="user_department">
+
+
+            <div class="form-group @error('department_id') has-error @enderror">
                 <label for="department_id">{{ trans('app.department') }}  <i class="text-danger">*</i></label><br/>
                 {{ Form::select('department_id', $departmentList, (old('department_id')?old('department_id'):$user->department_id), ['placeholder' => trans('app.select_option'), 'class'=> 'select2 form-control']) }}<br/>
                 <span class="text-danger">{{ $errors->first('department_id') }}</span>
-            </div>  --}}
+            </div> 
 
             <div class="form-group @error('mobile') has-error @enderror">
                 <label for="mobile">{{ trans('app.mobile') }} <i class="text-danger">*</i></label> 

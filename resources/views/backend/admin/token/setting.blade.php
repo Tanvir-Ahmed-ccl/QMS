@@ -19,7 +19,13 @@
 
                 <div class="form-group @error('department_id') has-error @enderror">
                     <label for="department_id">{{ trans('app.department') }} <i class="text-danger">*</i></label><br/>
-                    {{ Form::select('department_id', $departmentList, null, ['placeholder' => 'Select Option', 'class'=>'select2 form-control', 'required'=>'required']) }}<br/>
+                    {{-- {{ Form::select('department_id', $departmentList, null, ['placeholder' => 'Select Option', 'class'=>'select2 form-control', 'required'=>'required', 'onchange' => 'loadCounterAndOfficer(this.value)']) }}<br/> --}}
+                    <select name="department_id" class="select2 form-control" placeholder="Select Option" onchange="loadCounterAndOfficer(this.value)">
+                        <option value="" selected>Select Option</option>
+                        @foreach ($departmentList as $key => $item)
+                            <option value="{{$key}}">{{$item}}</option>
+                        @endforeach
+                    </select>
                     <span class="text-danger">{{ $errors->first('department_id') }}</span>
                 </div> 
 
@@ -33,15 +39,22 @@
                     <span class="text-danger">{{ $errors->first('section_id') }}</span>
                 </div> 
 
-                <div class="form-group @error('counter_id') has-error @enderror">
+                {{-- <div class="form-group @error('counter_id') has-error @enderror">
                     <label for="counter">{{ trans('app.counter') }} <i class="text-danger">*</i></label><br/>
                     {{ Form::select('counter_id', $countertList, null, ['placeholder' => 'Select Option', 'class'=>'select2 form-control', 'required'=>'required']) }}<br/>
                     <span class="text-danger">{{ $errors->first('counter_id') }}</span> 
+                </div>  --}}
+
+                <div class="form-group @error('counter_id') has-error @enderror">
+                    <label for="counter">{{ trans('app.counter') }} <i class="text-danger">*</i></label><br/>
+                    {{ Form::select('counter_id', [], null, ['placeholder' => 'Select Option', 'class'=>'select2 form-control', 'id'=>'ajax_counter', 'required'=>'required']) }}<br/>
+                    <span class="text-danger">{{ $errors->first('counter_id') }}</span>
                 </div> 
+
 
                 <div class="form-group @error('user_id') has-error @enderror">
                     <label for="officer">{{ trans('app.officer') }} <i class="text-danger">*</i></label><br/>
-                    {{ Form::select('user_id', $userList, null, ['placeholder' => 'Select Option', 'class'=>'select2 form-control', 'required'=>'required']) }}<br/>
+                    {{ Form::select('user_id', [], null, ['placeholder' => 'Select Option', 'class'=>'select2 form-control', 'id'=>'ajax_officer', 'required'=>'required']) }}<br/>
                     <span class="text-danger">{{ $errors->first('user_id') }}</span>
                 </div> 
                 
@@ -97,3 +110,27 @@
 @endsection
 
  
+
+@push('scripts')
+    <script>
+        function loadCounterAndOfficer(department){
+            console.log(department);
+
+            $.ajax({
+                "url": "{{route('load.counter.from.department')}}",
+                "type": "GET",
+                "data": {
+                    department: department,
+                    company: '{{getCompanyDetails(Auth::id())->id}}'
+                },
+                'success': function(resp){
+                    $("#ajax_counter").html(resp.counterOptions);
+                    $("#ajax_officer").html(resp.officerOptions);
+                },
+                "error": function(error){
+                    console.log(error.responseJSON.message);
+                }
+            })
+        }
+    </script>
+@endpush    

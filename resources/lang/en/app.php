@@ -32,7 +32,8 @@ return [
     'language'         => 'Language', 
  
     /*Dashboard*/
-    'dashboard'   => 'Dashboard',
+    'dashboard'   => 'Overview',
+    'pricing'       =>  'Pricing',
     'this_year'   => 'This Year (Token)',
     'this_month'   => 'This Month (Token)',
     'from_the_begining' => 'From the beginning (Token)',
@@ -64,7 +65,6 @@ return [
     'description'       => 'Description',
     'key_for_keyboard_mode' => 'Key for Keyboard Mode',
 
-
     /*service*/
     'service'        => 'Service',
     'service_name'        => 'Service Name',
@@ -72,12 +72,6 @@ return [
     'service_list'   => 'Service List',
     'update_service' => 'Update Service',
 
-    /*Appointment*/
-    'appointment'        => 'Appointment',
-
-    // advertisement
-    'advertisement' => 'Advertisement',
-    'ads' => 'ads',
 
     /*Counter*/
     'counter'      => 'Counter',
@@ -198,6 +192,22 @@ return [
     'start_date'    => "Start Date",
     'end_date'      => "End Date",
     'request'       => "Request",
+
+
+    /*Appointment*/
+    'appointment'        => 'Appointment',
+
+    /** User Type */
+    'user_type' => 'User Type',
+    'add_type' => 'Add Type',
+    'type_list' => 'Type List',
+
+    // Remote Queue
+    'remote_queue' => 'Remote Queue',
+
+    // advertisement
+    'advertisement' => 'Advertisement',
+    'ads' => 'ads',
 
     'show_mobile_no'  => 'Display Mobile Number',
     'show_officer'    => 'Display Officer',

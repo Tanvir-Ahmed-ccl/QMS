@@ -1,5 +1,5 @@
 @extends('layouts.backend')
-@section('title', "User Type")
+@section('title', trans('app.user_type'))
  
 
 @section('content')
@@ -7,8 +7,8 @@
     <div class="panel-heading">
         <ul class="row list-inline m-0">
             <li class="col-xs-10 p-0 text-left">
-                <h3>{{ trans('app.user_list') }}</h3>
-            </li>             
+                <h3>{{ trans('app.type_list') }}</h3>
+            </li>
             <li class="col-xs-2 p-0 text-right">
                 <button type="button" class="btn btn-warning btn-sm" data-toggle="modal" data-target="#infoModal">
                   <i class="fa fa-info-circle"></i>

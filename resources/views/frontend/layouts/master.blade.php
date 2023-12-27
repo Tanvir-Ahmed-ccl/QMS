@@ -388,8 +388,6 @@
 
     
     @yield('content')
-    
-
 
     <footer class="mt-5 bg-dark text-light">
         <div class="container pt-5">
@@ -401,7 +399,7 @@
                     <strong>Products</strong>
                     <br><br>
                     <ul class="list-unstyled">
-                        <li class="mb-2">Quesing Solution</li>
+                        <li class="mb-2">Queue Solution</li>
                         <li class="mb-2">Service Analytics</li>
                         <li class="mb-2">Visit Planner</li>
                         <li class="mb-2">Pricing</li>
@@ -422,7 +420,6 @@
                     </ul>
                 </div>
                 <!-- col-lg-2 -->
-            
                 <div class="col-lg-2">
                     <strong>Resources</strong>
                     <br><br>
@@ -435,8 +432,6 @@
                     </ul>
                 </div>
                 <!-- col-lg-2 -->
-            
-            
                 <div class="col-lg-2">
                     <strong>Company</strong>
                     <br><br>
@@ -469,8 +464,10 @@
 
     <!-- Bootstrap JavaScript-->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"
-        integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM"
-        crossorigin="anonymous"></script>
+      integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM"
+      crossorigin="anonymous"
+    >
+    </script>
 </body>
 
 </html>

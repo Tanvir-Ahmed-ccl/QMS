@@ -69,7 +69,7 @@ class DepartmentController extends Controller
             if(Department::where(['company_id' => $companyId, 'name' => $request->name])->exists())
             {
                 return redirect('admin/location/create')
-                ->withErrors(['name' => 'Department is already exists'])
+                ->withErrors(['name' => 'Location is already exists'])
                 ->withInput();
             }
             else if(Department::where(['company_id' => $companyId, 'key' => $request->key])->exists())
@@ -147,7 +147,7 @@ class DepartmentController extends Controller
             if(Department::where('id', "!=", $request->id)->where(['company_id' => $companyId, 'name' => $request->name])->exists())
             {
                 return redirect('admin/location/create')
-                ->withErrors(['name' => 'Department is already exists'])
+                ->withErrors(['name' => 'Location is already exists'])
                 ->withInput();
             }
             else if(Department::where('id', "!=", $request->id)->where(['company_id' => $companyId, 'key' => $request->key])->exists())

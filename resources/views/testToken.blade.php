@@ -10,7 +10,7 @@
 
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.4/font/bootstrap-icons.css">
 
-    <title>Gokiiw</title>
+    <title>{{env("APP_NAME")}}</title>
 
     <link rel="stylesheet" href="{{ asset('intelInput/style.css') }}">
     <style>

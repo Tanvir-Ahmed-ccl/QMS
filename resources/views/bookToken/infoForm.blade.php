@@ -8,9 +8,11 @@
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
 
-    <title>Gokiiw</title>
+    <title>{{env("APP_NAME")}}</title>
 
     <link rel="stylesheet" href="{{ asset('intelInput/style.css') }}">
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-beta.1/dist/css/select2.min.css" rel="stylesheet" />
+
     <style>
         .iti{
             display: block !important;
@@ -41,7 +43,7 @@
                         
                         <div class="form-group mb-3">
                           <label for=""><b>Select a {{ trans('app.service') }}</b></label>
-                          <select name="section_id" class="form-control" required disabled>
+                          <select name="section_id" class="form-control " required disabled>
                             <option value="">Select One</option>
                             @foreach ($sections as $section)
                               <option value="{{$section['id']}}" {{($token->section_id == $section['id']) ? 'selected' : ''}} >{{$section['name']}}</option>
@@ -55,7 +57,7 @@
                             <div class="form-group mb-3">
                               <label for="">Select Date</label>
                                 <input name="date" type="date" class="form-control" value="{{date('Y-m-d', strtotime($token->created_at))}}" required
-                                  
+                                  min="<?php echo date("Y-m-d"); ?>"
                                 />
                             </div>
                           </div>
@@ -126,7 +128,7 @@
                         
                         <div class="form-group mb-3">
                           <label for=""><b>Select a {{ trans('app.service') }}</b></label>
-                          <select name="section_id" id="section_id" class="form-control" required>
+                          <select name="section_id[]" id="section_id" class="js-example form-control" multiple required>
                             <option value="">Select One</option>
                             @foreach ($sections as $section)
                               <option value="{{$section['id']}}" @isset($data['section_id']) {{ ($data['section_id'] == $section->id) ? 'selected' : '' }} @endisset>{{$section['name']}}</option>
@@ -141,6 +143,7 @@
                               <label for="">Select Date</label>
                                 <input name="date" type="date" class="form-control" required
                                   @isset($data['date']) value="{{$data['date']}}" @endisset
+                                  min="<?php echo date("Y-m-d"); ?>"
                                   onchange="getAvailableSchedule(this.value)"
                                 >
                             </div>
@@ -195,10 +198,19 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
 
     <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-beta.1/dist/js/select2.min.js"></script>
+
+    <script>
+      $(document).ready(function() {
+          $(".js-example").select2();
+      });
+    </script>
+
     <script src="{{ asset('intelInput/jquery.min.js') }}"></script>
     <script src="{{ asset('intelInput/script.min.js') }}"></script>
-    <script>
 
+    <script>
+      
         function getAvailableSchedule(selectedDate)
         {
           let sectionId = $("#section_id").val();

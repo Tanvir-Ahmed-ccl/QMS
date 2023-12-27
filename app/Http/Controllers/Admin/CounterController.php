@@ -5,6 +5,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Http\Requests; 
 use App\Models\Counter;
+use App\Models\Department;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Validator, App;
@@ -29,8 +30,9 @@ class CounterController extends Controller
             return redirect('login')->with('exception',trans('app.you_are_not_authorized'));
         }
 
+        $department = Department::where('company_id', getCompanyDetails(Auth::id())->id)->pluck('name', 'id');
         $keyList = $this->keyList();
-    	return view('backend.admin.counter.form', compact('keyList'));
+    	return view('backend.admin.counter.form', compact('keyList', 'department'));
     }
     
     public function create(Request $request)
@@ -45,12 +47,14 @@ class CounterController extends Controller
         $validator = Validator::make($request->all(), [ 
             'description' => 'max:255',
             'status'      => 'required',
+            'department'      => 'required',
             'name'        => 'required|max:50',
             'key'        => 'required|max:1',
         ])
         ->setAttributeNames(array(
            'name' => trans('app.name'),
            'description' => trans('app.description'),
+           'department' => "Location field is required",
            'status' => trans('app.status'),
            'key' => trans('app.key_for_keyboard_mode'),
         ));
@@ -79,6 +83,7 @@ class CounterController extends Controller
  
             $save = Counter::insert([
                 'company_id'  => auth()->user()->company_id,
+                'department_id'  => $request->department,
                 'name'        => $request->name,
                 'description' => $request->description,
                 'key'         => $request->key,
@@ -105,9 +110,10 @@ class CounterController extends Controller
             return redirect('login')->with('exception',trans('app.you_are_not_authorized'));
         }
 
+        $department = Department::where('company_id', getCompanyDetails(Auth::id())->id)->pluck('name', 'id');
         $counter = Counter::where('id', $id)->first();
         $keyList = $this->keyList();
-        return view('backend.admin.counter.edit', compact('counter', 'keyList'));
+        return view('backend.admin.counter.edit', compact('counter', 'keyList', 'department'));
     }
   
     public function update(Request $request)
@@ -154,6 +160,7 @@ class CounterController extends Controller
 
             $update = Counter::where('id',$request->id)->update([
                     'name'        => $request->name,
+                    'department_id'        => $request->department,
                     'description' => $request->description,
                     'key'         => $request->key,
                     'updated_at'  => date('Y-m-d H:i:s'),

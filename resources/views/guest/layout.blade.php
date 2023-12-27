@@ -41,31 +41,28 @@
 
 <body class="cm-no-transition cm-1-navbar loader-process">
 
-    <div class="loader">
-        <div>
-            <span>G</span>
-            <span>O</span>
-            <span></span>
-            <span>K</span>
-            <span>I</span>
-            <span>I</span>
-            <span>W</span>
-        </div>
-    </div>
+    <x-preloader/>
 
     <!-- Starts of Header/Menu -->
-    <header id="cm-header">
+    {{-- <header>
         <nav class="cm-navbar cm-navbar-primary">
-            <div class="cm-flex text-center">
+            <div class="">
                 <h1 class="clearfix">{{ companyDetails($company->company_id)->title }}</h1>
             </div>
         </nav>
-    </header>
+    </header> --}}
+    <div class="container">
+        <div class="row bg-primary text-center">
+            <div class="col">
+                <h1 class="mb-3">{{ companyDetails($company->company_id)->title }}</h1>
+            </div>
+        </div>
+    </div>
     <!-- Ends of Header/Menu -->
 
     <div id="global">
 
-        <div class="container-fluid">
+        <div class="container">
             <!-- Starts of Message -->
             @yield('info.message')
             <!-- Ends of Message -->
@@ -76,11 +73,10 @@
         </div>
 
         <!-- Starts of Copyright -->
-        <footer class="cm-footer text-right">
-            <span class="pull-left text-center">Powered By Gokiiw</span>
+        <footer class="cm-footer container">
+            <span class="pull-left">Owned By {{env('APP_NAME')}} </span>
             <span class="pull-right text-center">
-                Owned By <a href="https://softafrique.net/" class="text-decoration-none" target="_blank">Softafrique
-                    LLC</a>
+                Developed By <a href="http://codecell.com.bd/" class="text-decoration-none" target="_blank">Codecell Limited</a>
             </span>
         </footer>
         <!-- Ends of Copyright -->

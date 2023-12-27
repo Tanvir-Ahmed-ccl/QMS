@@ -20,17 +20,7 @@
         <script src="{{ asset('assets/js/jquery.min.js') }}"></script>
     </head>
     <body class="cm-no-transition cm-1-navbar loader-process">
-        <div class="loader">
-            <div>
-                <span>G</span>
-                <span>O</span>
-                <span></span>
-                <span>K</span>
-                <span>I</span>
-                <span>I</span>
-                <span>W</span>
-            </div>
-        </div>
+        <x-preloader/>
         <!-- Starts of Content -->
         @yield('content')
         <!-- Ends of Contents -->

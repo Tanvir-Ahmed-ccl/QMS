@@ -32,9 +32,9 @@ class SettingController extends Controller
         $setting = Setting::where('company_id', auth()->user()->company_id)->first();
         if (empty($setting)) 
         {
-            Setting::insert([
-                'company_id'  => auth()->user()->company_id,
-                'title'       => 'Demo title',
+            $setting = Setting::create([
+                'company_id'  => getCompanyDetails(auth()->id())->id,
+                'title'       => 'Demo',
                 'description' => null,
                 'logo'        => null,
                 'favicon'     => null,
@@ -266,15 +266,10 @@ class SettingController extends Controller
         $userId = Auth::user()->id;
         $company = getCompanyDetails($userId);
 
-        if(is_null($company->qrcode))
+        if(is_null($company->token))
         {
             $token = strtolower(uniqid());
-
-            \QrCode::size(200)
-            ->format('png')
-            ->generate("hello.com", public_path('images/qrcode-'.$token.'.png'));
-
-            User::find($company->id)->update(['token' => $token, 'qrcode' => 'images/qrcode-'.$token.'.png']);
+            User::find($company->id)->update(['token' => $token]);
         }
     
         return view('backend.common.setting.qrcode');

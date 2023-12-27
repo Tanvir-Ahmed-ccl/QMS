@@ -1,6 +1,7 @@
 @extends('layouts.backend')
 @section('title', trans('app.auto_token'))
 @push('styles')
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-beta.1/dist/css/select2.min.css" rel="stylesheet" />
     <link rel="stylesheet" href="{{ asset('intelInput/style.css') }}">
     <!-- Jquery  -->
     <style>
@@ -100,9 +101,11 @@
         <p><input type="text" name="client_mobile" class="form-control" placeholder="{{ trans('app.client_mobile') }}" required><span class="text-danger">The Mobile No. field is required!</span></p>
         <p><input type="text" name="note" class="form-control" placeholder="{{ trans('Client Name') }}" required><span class="text-danger">The Name field is required!</span></p>
         @endif --}}
-        <div id="section">
-
-        </div>
+        <p class="mb-3">
+            <select id="section" name="section_id" class="form-select">
+                <option value="">Select Option</option>
+            </select>
+        </p>
 
         <p><input type="tel" id="mobile" name="client_mobile" class="form-control" placeholder="{{ trans('app.client_mobile') }}" required><span class="text-danger">The Mobile No. field is required!</span></p>
         <p><input type="text" name="note" class="form-control" placeholder="{{ trans('Client Name') }}" required><span class="text-danger">The Name field is required!</span></p>
@@ -132,7 +135,16 @@
 @endsection
 
 @push("scripts")
+
 <script src="{{ asset('intelInput/jquery.min.js') }}"></script>
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-beta.1/dist/js/select2.min.js"></script>
+
+    <script>
+      $(document).ready(function() {
+          $(".js-example").select2();
+      });
+    </script>
+
 <script src="{{ asset('intelInput/script.min.js') }}"></script>
 <script>
     function loadRelatedSection(deptId, companyId)
@@ -145,14 +157,14 @@
                 companyId: companyId
             },
             success: (res) => {
-                // console.log(res);
+                console.log(res);
                 if(res.items > 0)
                 {
-                    $("#section").html(res.html);
+                    $("#section").append(res.html);
                 }
                 else
                 {
-                    $("#section").html('');
+                    $("#section").append('');
                 }
             }
         })

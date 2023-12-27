@@ -23,13 +23,13 @@
 
 @section('info.version')
     <span class="hidden-xs">
-        Owned By <a href="https://softafrique.net/" target="_blank" class="text-decoration-none" target="_blank">Softafrique LLC</a>
+        Developed By <a href="http://codecell.com.bd" class="text-decoration-none" target="_blank">Codecell Limited</a>
     </span>
 @stop
 
 @if (strtolower(env('APP_ENV'))=='demo')
     @section('info.buy-now')
-        <div class="cm-flex"> <a class="btn btn-block btn-lg btn-success" href="https://1.envato.market/ck-queue">Buy now</a></div>
+        <div class="cm-flex"> <a class="btn btn-block btn-lg btn-success" href="javascript::">Buy now</a></div>
     @stop
     
     @section('info.login-credentials')
@@ -60,7 +60,7 @@
                         <td>Receptionist</td> 
                     </tr>  
                 </tbody>
-                <tfoot><tr><th colspan="3"><a class="btn btn-block btn-lg btn-success" href="https://1.envato.market/ck-queue">Buy now</a></th></tr></tfoot>
+                <tfoot><tr><th colspan="3"><a class="btn btn-block btn-lg btn-success" href="javascript::">Buy now</a></th></tr></tfoot>
             </table> 
         </div>
     </div>

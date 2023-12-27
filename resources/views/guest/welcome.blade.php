@@ -17,14 +17,16 @@
 
         <div class="row bg-dark text-light text-center justify-content-center align-items-center" style="min-height: 70vh">
           <div class="col-12 ">
+
+            <h3>{{$setting->disable_msg}}</h3>
             
-            @if(is_null($setting->announcement))
+            {{-- @if(is_null($setting->announcement))
             <h3>{{$setting->disable_msg}}</h3>
             @else
-            <h3>
+            <h1>
               {!!$setting->announcement!!}
-            </h3>
-            @endif
+            </h1>
+            @endif --}}
           </div> 
         </div>
     </div>

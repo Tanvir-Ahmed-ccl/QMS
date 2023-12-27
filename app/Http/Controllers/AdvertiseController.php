@@ -16,7 +16,7 @@ class AdvertiseController extends Controller
      */
     public function index()
     {
-        $data['ads'] = Ads::selfData();
+        $data['ads'] = Ads::selfData(Auth::id());
 
         return view('ads.index', compact('data'));
     }
@@ -109,13 +109,13 @@ class AdvertiseController extends Controller
         {
             File::delete(public_path($ads->images));
 
-            $fileName = time() . '.' .$request->file('banner')->getExtension();
+            $fileName = time() . '.' .$request->file('banner')->extension();
             $request->file('banner')->move(public_path('upload/ads'), $fileName);
             $ads->images = "upload/ads/" . $fileName;
         }
         $ads->save();
 
-        return redirect()->route('addon.index');
+        return redirect()->route('advertisement.index');
     }
 
     /**
@@ -126,8 +126,12 @@ class AdvertiseController extends Controller
      */
     public function destroy($id)
     {
+        // return $id;
+
         if($ads = Ads::find($id))
         {
+            File::delete(public_path($ads->images));
+
             $ads->delete();
 
             return back();

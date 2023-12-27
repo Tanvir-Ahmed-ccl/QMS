@@ -22,7 +22,7 @@
 
     <div class="panel-body">
         <div style="margin-bottom: 30px" class="h4">
-            <b>Invite Link: </b> <a href="{{ route('book.token.index', auth()->user()->company->token) }}" id="copy-link">{{ route('book.token.index', auth()->user()->company->token) }}</a> <button onclick="copyLink()" id="copy-btn" style="margin-left: 10px">Copy</button>
+            <b>Invite Link: </b> <a href="{{ route('book.token.index', (auth()->user()->company) ? auth()->user()->company->token : auth()->user()->token) }}" id="copy-link">{{ route('book.token.index', (auth()->user()->company) ? auth()->user()->company->token : auth()->user()->token) }}</a> <button onclick="copyLink()" id="copy-btn" style="margin-left: 10px">Copy</button>
         </div>
 
         <table class="datatable display table table-bordered" width="100%" cellspacing="0">

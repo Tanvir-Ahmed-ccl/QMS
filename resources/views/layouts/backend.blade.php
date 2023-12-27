@@ -35,24 +35,7 @@
     <body class="cm-no-transition cm-1-navbar loader-process">
         @include('backend.common.info')
 
-        <div class="loader">
-            <div>
-                <span>G</span>
-                <span>O</span>
-                <span></span>
-                <span>K</span>
-                <span>I</span>
-                <span>I</span>
-                <span>W</span>
-                {{-- <span></span> --}}
-                {{-- <span>K</span>
-                <span>E</span>
-                <span>R</span>
-                <span>N</span>
-                <span>E</span>
-                <span>L</span> --}}
-            </div>
-        </div>
+        <x-preloader/>
 
         <!-- Starts of Sidebar -->
         <div id="cm-menu">
@@ -73,6 +56,23 @@
                                     {{ trans('app.dashboard') }}
                                 </a>
                             </li>
+
+                            {{-- <li class="cm-submenu {{ (Request::segment(2)=='location' ? 'open' : '') }}">
+                                <a class="sf-carton">{{ trans('app.pricing') }} <span class="caret"></span></a>
+                                <ul>
+                                    @if(issetAccess(auth()->user()->user_role_id)->setting['subsription'])
+                                    <li class="{{ (Request::is('admin/subscription') ? 'active' : '') }}">
+                                        <a href="{{ url('admin/subscription') }}">Subscription</a>
+                                    </li>
+                                    @endif
+
+                                    @if(issetAccess(auth()->user()->user_role_id)->setting['subsription'])
+                                    <li class="{{ (Request::is('admin/addons/*') ? 'active' : '') }}">
+                                        <a href="{{ url('admin/addons') }}">Add-ons</a>
+                                    </li>
+                                    @endif
+                                </ul>
+                            </li>  --}}
 
                             @if(issetAccess(auth()->user()->user_role_id)->location['read'] || issetAccess(auth()->user()->user_role_id)->location['write'])
                             <li class="cm-submenu {{ (Request::segment(2)=='location' ? 'open' : '') }}">
@@ -136,17 +136,17 @@
                             {{-- user type --}}
                             @if(issetAccess(auth()->user()->user_role_id)->user_type['read'] || issetAccess(auth()->user()->user_role_id)->user_type['write'])
                             <li class="cm-submenu {{ (Request::segment(2)=='user-type' ? 'open' : '') }}">
-                                <a class="sf-profile-group">{{ trans('User Type') }} <span class="caret"></span></a>
+                                <a class="sf-profile-group">{{ trans('app.user_type') }} <span class="caret"></span></a>
                                 <ul>
                                     @if(issetAccess(auth()->user()->user_role_id)->user_type['write'])
                                     <li class="{{ (Request::is('admin/user-type/create') ? 'active' : '') }}">
-                                        <a href="{{ url('admin/user-type/create') }}">{{ trans('New User Type') }}</a>
+                                        <a href="{{ url('admin/user-type/create') }}">{{ trans('app.add_type') }}</a>
                                     </li>
                                     @endif
 
                                     @if(issetAccess(auth()->user()->user_role_id)->counter['read'])
                                     <li class="{{ (Request::is('admin/user-type') ? 'active' : '') }}">
-                                        <a href="{{ url('admin/user-type') }}">{{ trans('User type List') }}</a>
+                                        <a href="{{ url('admin/user-type') }}">{{ trans('app.type_list') }}</a>
                                     </li>
                                     @endif
                                 </ul>
@@ -173,28 +173,6 @@
                             </li> 
                             @endif
 
-                            {{-- SMS --}}
-                            @if(issetAccess(auth()->user()->user_role_id)->sms['read'] || issetAccess(auth()->user()->user_role_id)->sms['write'])
-                            <li class="cm-submenu {{ (Request::segment(2)=='sms' ? 'open' : '') }}">
-                                <a class="sf-bubbles">{{ trans('app.sms') }} <span class="caret"></span></a>
-                                <ul>
-                                    @if(issetAccess(auth()->user()->user_role_id)->sms['write'])
-                                    <li class="{{ (Request::is('admin/sms/new') ? 'active' : '') }}">
-                                        <a href="{{ url('admin/sms/new') }}">{{ trans('app.new_sms') }}</a>
-                                    </li>
-                                    @endif
-
-                                    @if(issetAccess(auth()->user()->user_role_id)->sms['read'])
-                                    <li class="{{ (Request::is('admin/sms/list') ? 'active' : '') }}">
-                                        <a href="{{ url('admin/sms/list') }}">{{ trans('app.sms_history') }}</a>
-                                    </li>
-                                    @endif
-                                    {{-- <li class="bg-danger {{ (Request::is('admin/sms/setting') ? 'active' : '') }}">
-                                        <a href="{{ url('admin/sms/setting') }}">{{ trans('app.sms_setting') }}</a>
-                                    </li> --}}
-                                </ul>
-                            </li> 
-                            @endif
 
                             {{-- token --}}
                             <li class="cm-submenu {{ (Request::segment(2)=='token' ? 'open' : '') }}">
@@ -322,8 +300,74 @@
                             </li> 
                             @endif
 
+
+                            {{-- Settings --}}
+                            <li class="cm-submenu {{ (Request::segment(2)=='setting' ? 'open' : '') }}">
+                                <a class="sf-cog">{{ trans('app.setting') }} <span class="caret"></span></a>
+                                <ul>
+                                    @if(issetAccess(auth()->user()->user_role_id)->setting['app_setting'])
+                                    <li class="{{ (Request::is('admin/setting') ? 'active' : '') }}">
+                                        <a href="{{ url('admin/setting') }}">{{ trans('app.app_setting') }}</a>
+                                    </li>
+                                    @endif
+
+                                    {{-- @if(issetAccess(auth()->user()->user_role_id)->setting['subsription'])
+                                    <li class="{{ (Request::is('admin/subscription') ? 'active' : '') }}">
+                                        <a href="{{ url('admin/subscription') }}">Subscription</a>
+                                    </li>
+                                    @endif --}}
+
+                                    @if(issetAccess(auth()->user()->user_role_id)->setting['display_setting'])
+                                    <li class="{{ (Request::is('admin/setting/display') ? 'active' : '') }}">
+                                        <a href="{{ url('admin/setting/display') }}">{{ trans('app.display_setting') }}</a>
+                                    </li>
+                                    @endif
+
+                                    @if(issetAccess(auth()->user()->user_role_id)->setting['profile_information'])
+                                    <li class="{{ (Request::is('common/setting/*') ? 'active' : '') }}">
+                                        <a href="{{ url('common/setting/profile') }}">{{ trans('app.profile_information') }}</a>
+                                    </li>
+                                    @endif
+
+                                    {{-- @if(issetAccess(auth()->user()->user_role_id)->setting['subsription'])
+                                    <li class="{{ (Request::is('admin/addons/*') ? 'active' : '') }}">
+                                        <a href="{{ url('admin/addons') }}">Addons</a>
+                                    </li>
+                                    @endif --}}
+                                </ul>
+                            </li>
+                            
+                            
+
+                            {{-- @if(\App\AddonUsesHistory::where('user_id', companyOwner(Auth::id())->id)->where('addon_id', 2)->exists()) --}}
+                            <li class="{{ (Request::is('qrcode') ? 'active' : '') }}">
+                                <a href="{{ url('qrcode') }}" class="sf-star">{{ trans('app.remote_queue') }}</a>
+                            </li>
+                            {{-- @endif --}}
+
+                            {{-- SMS --}}
+                            {{-- @if(issetAccess(auth()->user()->user_role_id)->sms['read'] || issetAccess(auth()->user()->user_role_id)->sms['write']) --}}
+                            <li class="cm-submenu {{ (Request::segment(2)=='sms' ? 'open' : '') }}">
+                                <a class="sf-bubbles">{{ trans('app.sms') }} <span class="caret"></span></a>
+                                <ul>
+                                    @if(issetAccess(auth()->user()->user_role_id)->sms['write'])
+                                    <li class="{{ (Request::is('admin/sms/new') ? 'active' : '') }}">
+                                        <a href="{{ url('admin/sms/new') }}">{{ trans('app.new_sms') }}</a>
+                                    </li>
+                                    @endif
+
+                                    @if(issetAccess(auth()->user()->user_role_id)->sms['read'])
+                                    <li class="{{ (Request::is('admin/sms/list') ? 'active' : '') }}">
+                                        <a href="{{ url('admin/sms/list') }}">{{ trans('app.sms_history') }}</a>
+                                    </li>
+                                    @endif
+                                    
+                                </ul>
+                            </li> 
+                            {{-- @endif --}}
+
                             {{-- Message --}}
-                            @if(issetAccess(auth()->user()->user_role_id)->message)
+                            {{-- @if(issetAccess(auth()->user()->user_role_id)->message) --}}
                             <li class="cm-submenu {{ (Request::segment(2)=='message' ? 'open' : '') }}">
                                 <a class="sf-envelope-letter">{{ trans('app.message') }} <span class="caret"></span></a>
                                 <ul>
@@ -338,63 +382,19 @@
                                     </li>
                                 </ul>
                             </li> 
-                            @endif
+                            {{-- @endif --}}
 
-                            {{-- Settings --}}
-                            <li class="cm-submenu {{ (Request::segment(2)=='setting' ? 'open' : '') }}">
-                                <a class="sf-cog">{{ trans('app.setting') }} <span class="caret"></span></a>
-                                <ul>
-                                    @if(issetAccess(auth()->user()->user_role_id)->setting['app_setting'])
-                                    <li class="{{ (Request::is('admin/setting') ? 'active' : '') }}">
-                                        <a href="{{ url('admin/setting') }}">{{ trans('app.app_setting') }}</a>
-                                    </li>
-                                    @endif
-
-                                    @if(issetAccess(auth()->user()->user_role_id)->setting['subsription'])
-                                    <li class="{{ (Request::is('admin/subscription') ? 'active' : '') }}">
-                                        <a href="{{ url('admin/subscription') }}">Subscription</a>
-                                    </li>
-                                    @endif
-
-                                    @if(issetAccess(auth()->user()->user_role_id)->setting['display_setting'])
-                                    <li class="{{ (Request::is('admin/setting/display') ? 'active' : '') }}">
-                                        <a href="{{ url('admin/setting/display') }}">{{ trans('app.display_setting') }}</a>
-                                    </li>
-                                    @endif
-
-                                    @if(issetAccess(auth()->user()->user_role_id)->setting['profile_information'])
-                                    <li class="{{ (Request::is('common/setting/*') ? 'active' : '') }}">
-                                        <a href="{{ url('common/setting/profile') }}">{{ trans('app.profile_information') }}</a>
-                                    </li>
-                                    @endif
-
-                                    @if(issetAccess(auth()->user()->user_role_id)->setting['subsription'])
-                                    <li class="{{ (Request::is('admin/addons/*') ? 'active' : '') }}">
-                                        <a href="{{ url('admin/addons') }}">Addons</a>
-                                    </li>
-                                    @endif
-                                </ul>
-                            </li>
-                            
-                            
-
-                            @if(\App\AddonUsesHistory::where('user_id', companyOwner(Auth::id())->id)->where('addon_id', 2)->exists())
-                            <li class="{{ (Request::is('qrcode') ? 'active' : '') }}">
-                                <a href="{{ url('qrcode') }}" class="sf-star">Remote Queue</a>
-                            </li>
-                            @endif
-
-                            @if(\App\AddonUsesHistory::where('user_id', companyOwner(Auth::id())->id)->where('addon_id', 1)->exists())
+                            {{-- @if(\App\AddonUsesHistory::where('user_id', companyOwner(Auth::id())->id)->where('addon_id', 1)->exists()) --}}
                             <li class="{{ (Request::is('admin/book') ? 'active' : '') }}">
-                                <a href="{{ route('book.index') }}" class="sf-star">Book Appointment</a>
+                                <a href="{{ route('book.index') }}" class="sf-star">{{trans('app.appointment')}}</a>
                             </li>
-                            @endif
+                            {{-- @endif --}}
 
-                            @if(\App\AddonUsesHistory::where('user_id', companyOwner(Auth::id())->id)->where('addon_id', 3)->exists())
+                            {{-- @if(\App\AddonUsesHistory::where('user_id', companyOwner(Auth::id())->id)->where('addon_id', 3)->exists()) --}}
                             <li class="{{ (Request::is('qrcode') ? 'active' : '') }}">
-                                <a href="{{ url('admin/advertisement') }}" class="sf-star">Advertisement</a>
+                                <a href="{{ url('admin/advertisement') }}" class="sf-star">{{trans('app.advertisement')}}</a>
                             </li>
-                            @endif
+                            {{-- @endif --}}
 
                             <li class="{{ ((Request::is('logout')) ? 'active' : '') }}">
                                 <a href="{{ url('logout') }}" class="sf-lock">
@@ -470,7 +470,7 @@
                                 <a href="javascript:void(0)" data-locale="en" class="select-lang list-group-item {{ ((Session::get('locale')=='en' || !Session::has('locale'))?'active':'') }}">
                                     <h4 class="list-group-item-heading"></i> English</h4>
                                 </a>
-                                <a href="javascript:void(0)" data-locale="ar" class="select-lang list-group-item {{ (Session::get('locale')=='ar'?'active':'') }}">
+                                {{-- <a href="javascript:void(0)" data-locale="ar" class="select-lang list-group-item {{ (Session::get('locale')=='ar'?'active':'') }}">
                                     <h4 class="list-group-item-heading"></i> العَرَبِيَّة'</h4>
                                 </a> 
                                 <a href="javascript:void(0)" data-locale="tr" class="select-lang list-group-item {{ (Session::get('locale')=='tr'?'active':'') }}">
@@ -478,11 +478,11 @@
                                 </a> 
                                 <a href="javascript:void(0)" data-locale="bn" class="select-lang list-group-item {{ (Session::get('locale')=='bn'?'active':'') }}">
                                     <h4 class="list-group-item-heading"></i> বাংলা</h4>
-                                </a> 
+                                </a>  --}}
                                 <a href="javascript:void(0)" data-locale="es" class="select-lang list-group-item {{ (Session::get('locale')=='es'?'active':'') }}">
                                     <h4 class="list-group-item-heading"></i> Español</h4>
                                 </a> 
-                                <a href="javascript:void(0)" data-locale="fr" class="select-lang list-group-item {{ (Session::get('locale')=='fr'?'active':'') }}">
+                                {{-- <a href="javascript:void(0)" data-locale="fr" class="select-lang list-group-item {{ (Session::get('locale')=='fr'?'active':'') }}">
                                     <h4 class="list-group-item-heading"></i> Français</h4>
                                 </a> 
                                 <a href="javascript:void(0)" data-locale="pt" class="select-lang list-group-item {{ (Session::get('locale')=='pt'?'active':'') }}">
@@ -496,7 +496,7 @@
                                 </a> 
                                 <a href="javascript:void(0)" data-locale="vi" class="select-lang list-group-item {{ ((Session::get('locale')=='vi')?'active':'') }}">
                                     <h4 class="list-group-item-heading"></i> Tiếng Việt</h4>
-                                </a>
+                                </a> --}}
                             </div>
                         </div>
                     </div>
@@ -543,9 +543,9 @@
             <!-- Starts of Copyright -->
                 
             <footer class="cm-footer text-right">
-                <span class="hidden-xs">Owned By <a href="https://softafrique.net/" class="text-decoration-none" target="_blank">Softafrique LLC</a></span>
+                <span class="hidden-xs">Developed By <a href="http://codecell.com.bd" class="text-decoration-none" target="_blank">Codecell Limited</a></span>
                 {{-- <span class="pull-left text-center">@yield('info.powered-by') @yield('info.version')</span>  --}}
-                <span class="pull-left text-center">Powered By Gokiiw</span> 
+                <span class="pull-left text-center">Owned By QMS</span> 
             </footer>
             <!-- Ends of Copyright -->
         </div>

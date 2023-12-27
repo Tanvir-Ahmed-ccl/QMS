@@ -11,20 +11,23 @@ use Illuminate\Support\Facades\URL;
 // Route::middleware('checkRoute')->group(function(){
 
 Route::view('test-token', "testToken");
+Route::get("test-otp", function(){
+	return sendSMSByTwilio(8801568405146, 586756);
+});
 
 # -----------------------------------------------------------
 # ------------	FRONTEND PAGE
 # -----------------------------------------------------------
 Route::get('/', 'FrontendController@home')->name('home');
-Route::view('products', 'frontend.products')->name('products');
-Route::view('pricing', 'frontend.pricing')->name('pricing');
-Route::view('blog', 'frontend.blog')->name('blog');
-Route::view('about-us', 'frontend.about-us')->name('about');
-Route::view('success-story', 'frontend.success-story')->name('success.story');
-Route::view('help-centre', 'frontend.help-centre')->name('help.centre');
-Route::view('faq', 'frontend.faq')->name('faq');
-Route::view('podecast', 'frontend.podcast')->name('podecast');
-Route::view('careers', 'frontend.careers')->name('careers');
+// Route::view('products', 'frontend.products')->name('products');
+// Route::view('pricing', 'frontend.pricing')->name('pricing');
+// Route::view('blog', 'frontend.blog')->name('blog');
+// Route::view('about-us', 'frontend.about-us')->name('about');
+// Route::view('success-story', 'frontend.success-story')->name('success.story');
+// Route::view('help-centre', 'frontend.help-centre')->name('help.centre');
+// Route::view('faq', 'frontend.faq')->name('faq');
+// Route::view('podecast', 'frontend.podcast')->name('podecast');
+// Route::view('careers', 'frontend.careers')->name('careers');
 Route::view('signup-success', 'auth.sign-up')->name('signup.success');
 
 /// good bye route
@@ -59,6 +62,7 @@ Route::post('check-otp', 'Auth\LoginController@checkOtpAndLogin')->name('checkOt
 Route::post('resend-otp', 'Auth\LoginController@resendOtp')->name('resendOtp');
 Route::get('logout', 'Common\LoginController@logout')->name('logout');
 Route::get('terms', "FrontendController@showTerms")->name('terms');
+Route::get('privacy', "FrontendController@showPrivacy")->name('privacy');
 // reset password
 
 
@@ -80,13 +84,17 @@ Route::get('clean', function () {
 });
 
 // Route for ajax operation
+Route::get('get/token/info', 'AjaxController@getTokenInfo')->name('ajax.load.token.info');
+Route::post('admin/token/update/service', 'AutoTokenController@autoTokenUpdate');
 Route::post("ajax/load/available-time", 'AjaxController@getTimeSchedule')->name('ajax.getAvailableTime');
 Route::get("ajax/load/section", 'AjaxController@section')->name('ajax.load.section');
+Route::get("ajax/section/option/only", 'AjaxController@optionOnlyForSection')->name('ajax.section.option.only');
 Route::get("ajax/load/counter", 'AjaxController@counter')->name('ajax.load.counter');
 Route::get("ajax/load/user", 'AjaxController@user')->name('ajax.load.user');
 Route::get("ajax/send/otp", 'AjaxController@sendOtp')->name('ajax.send.otp');
 Route::get("token/{id}", 'AjaxController@showSingleToken')->name('show.single.token');
 Route::get('ajax/section', 'FrontendController@getSection')->name('get.section');
+Route::get("ajax/load-counter/from-department", 'AjaxController@getCounterFromDepartment')->name('load.counter.from.department');
 
 
 // book a token
@@ -102,9 +110,9 @@ Route::post("update/appointment", 'TokenBookingController@updateAppointment')->n
 Route::get("booked/reminder/send", 'TokenBookingController@sendReminder');
 
 # book apoinment for admin panel
-Route::get('admin/book','Admin\TokenBookingController@index')->middleware(['auth', 'checkSubscription'])->name('book.index');
-Route::get("book/settings", 'Admin\TokenBookingController@showSetting')->middleware(['auth', 'checkSubscription'])->name('book.setting');
-Route::post("admin/book/settings", 'Admin\TokenBookingController@setting')->middleware(['auth', 'checkSubscription'])->name('book.setting.store');
+Route::get('admin/book','Admin\TokenBookingController@index')->middleware(['auth'])->name('book.index');
+Route::get("book/settings", 'Admin\TokenBookingController@showSetting')->middleware(['auth'])->name('book.setting');
+Route::post("admin/book/settings", 'Admin\TokenBookingController@setting')->middleware(['auth'])->name('book.setting.store');
 
 
 # -----------------------------------------------------------
@@ -158,8 +166,9 @@ Route::prefix('common')
 });
 
 // Route guest users
-Route::get("qrcode", 'Admin\SettingController@qrcode')->name('qrcode')->middleware(['auth', 'checkSubscription']);
+Route::get("qrcode", 'Admin\SettingController@qrcode')->name('qrcode')->middleware(['auth']);
 Route::get("qr/{token}", 'FrontendController@guestLogin')->name('guestLogin');
+Route::post("qr/token/refresh", "AutoTokenController@tokenRefresh")->name('qr.token.refresh');
 Route::post("guest/token", 'FrontendController@guestAutoToken')->name('guest.token');
 Route::get("guest/token/edit/{id}", 'FrontendController@guestAutoTokenEdit')->name('guest.token.edit');
 Route::post("guest/token/update", 'FrontendController@guestAutoTokenUpdate')->name('guest.token.update');
@@ -184,7 +193,7 @@ Route::get('admin/subscription','Admin\SettingController@showSubscription')->nam
 Route::post('admin/subscription','Admin\SettingController@subscription')->name('stripe.payment'); 
 
 
-Route::group(['middleware' => ['auth', 'checkSubscription']], function() { 
+Route::group(['middleware' => ['auth']], function() { 
 
 	# -----------------------------------------------------------
 	# ADMIN
@@ -330,7 +339,7 @@ Route::group(['middleware' => ['auth', 'checkSubscription']], function() {
 # -----------------------------------------------------------
 # Advertisement
 # -----------------------------------------------------------
-Route::middleware(['auth', 'checkSubscription'])
+Route::middleware(['auth'])
 ->prefix('admin')
 ->group(function(){
 	Route::resource('advertisement', 'AdvertiseController');
@@ -340,97 +349,84 @@ Route::middleware(['auth', 'checkSubscription'])
 # -----------------------------------------------------------
 # Owner Panel
 # -----------------------------------------------------------
-Route::get('owner/login', 'Owner\OwnerController@loginShow')->name('owner.login');
-Route::post('owner/otp-login', 'Owner\OwnerController@otpLogin')->name('owner.otp.login');
-Route::post('owner/login', 'Owner\OwnerController@login')->name('owner.login');
+// Route::get('owner/login', 'Owner\OwnerController@loginShow')->name('owner.login');
+// Route::post('owner/otp-login', 'Owner\OwnerController@otpLogin')->name('owner.otp.login');
+// Route::post('owner/login', 'Owner\OwnerController@login')->name('owner.login');
 
-Route::group(['middleware' => ['auth:owner']], function(){
+// Route::group(['middleware' => ['auth:owner']], function(){
 
-	// Sliders
-	Route::get('owner/slider', 'Owner\SliderController@index')->name('slider.index');
-	Route::get('owner/slider/create', 'Owner\SliderController@create')->name('slider.create');
-	Route::post('owner/slider/store', 'Owner\SliderController@store')->name('slider.store');
-	Route::get('owner/slider/{key}/edit', 'Owner\SliderController@edit')->name('slider.edit');
-	Route::post('owner/slider/update', 'Owner\SliderController@update')->name('slider.update');
-	Route::get('owner/slider/{key}/destroy', 'Owner\SliderController@destroy')->name('slider.destroy');
+// 	// Sliders
+// 	Route::get('owner/slider', 'Owner\SliderController@index')->name('slider.index');
+// 	Route::get('owner/slider/create', 'Owner\SliderController@create')->name('slider.create');
+// 	Route::post('owner/slider/store', 'Owner\SliderController@store')->name('slider.store');
+// 	Route::get('owner/slider/{key}/edit', 'Owner\SliderController@edit')->name('slider.edit');
+// 	Route::post('owner/slider/update', 'Owner\SliderController@update')->name('slider.update');
+// 	Route::get('owner/slider/{key}/destroy', 'Owner\SliderController@destroy')->name('slider.destroy');
 
-	// Sliders
-	Route::get('owner/addon', 'Owner\AddonController@index')->name('addon.index');
-	Route::get('owner/addon/{key}/edit', 'Owner\AddonController@edit')->name('addon.edit');
-	Route::post('owner/addon/update', 'Owner\AddonController@update')->name('addon.update');
+// 	// Sliders
+// 	Route::get('owner/addon', 'Owner\AddonController@index')->name('addon.index');
+// 	Route::get('owner/addon/{key}/edit', 'Owner\AddonController@edit')->name('addon.edit');
+// 	Route::post('owner/addon/update', 'Owner\AddonController@update')->name('addon.update');
 
-	Route::get('owner/dashboard', 'Owner\OwnerController@dashboard')->name('owner.dashboard');
-	Route::get('owner/stripe', 'Owner\OwnerController@stripe')->name('owner.stripe');
-	Route::get('owner/setting', 'Owner\OwnerController@stripe')->name('owner.settings');
-	Route::get('owner/profile', 'Owner\OwnerController@stripe')->name('owner.profile');
-	Route::get('owner/logout', 'Owner\OwnerController@logout')->name('owner.logout');
+// 	Route::get('owner/dashboard', 'Owner\OwnerController@dashboard')->name('owner.dashboard');
+// 	Route::get('owner/stripe', 'Owner\OwnerController@stripe')->name('owner.stripe');
+// 	Route::get('owner/setting', 'Owner\OwnerController@stripe')->name('owner.settings');
+// 	Route::get('owner/profile', 'Owner\OwnerController@stripe')->name('owner.profile');
+// 	Route::get('owner/logout', 'Owner\OwnerController@logout')->name('owner.logout');
 
-	//  route for user control
-	Route::get('owner/users', 'Owner\OwnerController@showUsers')->name('owner.users');
-	Route::get('owner/users/edit/{key}', 'Owner\OwnerController@editUser')->name('owner.user.edit');
-	Route::post('owner/users/update', 'Owner\OwnerController@updateUser')->name('owner.user.update');
-	Route::get('owner/users/status/{key}', 'Owner\OwnerController@status')->name('owner.user.status');
-	Route::get('owner/users/{userId}/subscription', 'Owner\OwnerController@userSubscription')->name('owner.user.subscription');
-	Route::post('owner/users/subscription/update', 'Owner\OwnerController@updateSubscription')->name('owner.user.subscription.update');
-	Route::get('owner/users/search', 'Owner\OwnerController@searchUser')->name('owner.user.search');
+// 	//  route for user control
+// 	Route::get('owner/users', 'Owner\OwnerController@showUsers')->name('owner.users');
+// 	Route::get('owner/users/edit/{key}', 'Owner\OwnerController@editUser')->name('owner.user.edit');
+// 	Route::post('owner/users/update', 'Owner\OwnerController@updateUser')->name('owner.user.update');
+// 	Route::get('owner/users/status/{key}', 'Owner\OwnerController@status')->name('owner.user.status');
+// 	Route::get('owner/users/{userId}/subscription', 'Owner\OwnerController@userSubscription')->name('owner.user.subscription');
+// 	Route::post('owner/users/subscription/update', 'Owner\OwnerController@updateSubscription')->name('owner.user.subscription.update');
+// 	Route::get('owner/users/search', 'Owner\OwnerController@searchUser')->name('owner.user.search');
 
-	//subscription plans
-	Route::get('owner/plans', 'Owner\OwnerController@showPlans')->name('owner.plans');
-	Route::get('owner/plan/new', 'Owner\OwnerController@newPlans')->name('owner.plan.create');
-	Route::post('owner/plan/store', 'Owner\OwnerController@storePlan')->name('owner.plan.store');
-	Route::get('owner/plan/edit/{key}', 'Owner\OwnerController@editPlans')->name('owner.plan.edit');
-	Route::post('owner/plan/update', 'Owner\OwnerController@updatePlans')->name('owner.plan.update');
-	Route::get('owner/plan/delete/{key}', 'Owner\OwnerController@deletePlan')->name('owner.plan.delete');
-	Route::get('owner/plan/status', 'Owner\OwnerController@planStatus')->name('owner.plan.status');
-
-
-	// app settings
-	Route::get("owner/settings/{what?}", "Owner\OwnerController@showAppSettings")->name('owner.app.settings');
-	Route::post("owner/settings", "Owner\OwnerController@appSettings")->name('owner.app.settings.update');
-
-	// About
-	Route::get("owner/app-about", "Owner\OwnerController@showAbout")->name('owner.app.about');
-	Route::post("owner/about/update", "Owner\OwnerController@storeAbout")->name('owner.about.store');
-
-	// Profile
-	Route::get("owner/profile", "Owner\OwnerController@showProfile")->name('owner.profile');
-	Route::post("owner/profile", "Owner\OwnerController@updateProfile")->name('owner.profile.update');
-	Route::post("owner/password", "Owner\OwnerController@updatePassword")->name('owner.password');
-
-	// owners
-	Route::get('owners', "Owner\OwnerController@ownerList")->name('owners');
-	Route::get('owner/create/{rowId?}', "Owner\OwnerController@ownerCreate")->name('owner.create');
-	Route::post('owner/store', "Owner\OwnerController@ownerStore")->name('owner.store');
-	Route::post('owner/update', "Owner\OwnerController@ownerUpdate")->name('owner.update');
-	Route::get('owner/delete/{key}', "Owner\OwnerController@ownerDelete")->name('owner.delete');
-	Route::get('owner/status/{key}', "Owner\OwnerController@ownerStatus")->name('owner.status');
+// 	//subscription plans
+// 	Route::get('owner/plans', 'Owner\OwnerController@showPlans')->name('owner.plans');
+// 	Route::get('owner/plan/new', 'Owner\OwnerController@newPlans')->name('owner.plan.create');
+// 	Route::post('owner/plan/store', 'Owner\OwnerController@storePlan')->name('owner.plan.store');
+// 	Route::get('owner/plan/edit/{key}', 'Owner\OwnerController@editPlans')->name('owner.plan.edit');
+// 	Route::post('owner/plan/update', 'Owner\OwnerController@updatePlans')->name('owner.plan.update');
+// 	Route::get('owner/plan/delete/{key}', 'Owner\OwnerController@deletePlan')->name('owner.plan.delete');
+// 	Route::get('owner/plan/status', 'Owner\OwnerController@planStatus')->name('owner.plan.status');
 
 
-	// terms of service
-	Route::get('owner/terms', "Owner\OwnerController@showTerms")->name('owner.terms');
-	Route::post('owner/terms', "Owner\OwnerController@updateTerms")->name('owner.terms.update');
+// 	// app settings
+// 	Route::get("owner/settings/{what?}", "Owner\OwnerController@showAppSettings")->name('owner.app.settings');
+// 	Route::post("owner/settings", "Owner\OwnerController@appSettings")->name('owner.app.settings.update');
+
+// 	// About
+// 	Route::get("owner/app-about", "Owner\OwnerController@showAbout")->name('owner.app.about');
+// 	Route::post("owner/about/update", "Owner\OwnerController@storeAbout")->name('owner.about.store');
+
+// 	// Profile
+// 	Route::get("owner/profile", "Owner\OwnerController@showProfile")->name('owner.profile');
+// 	Route::post("owner/profile", "Owner\OwnerController@updateProfile")->name('owner.profile.update');
+// 	Route::post("owner/password", "Owner\OwnerController@updatePassword")->name('owner.password');
+
+// 	// owners
+// 	Route::get('owners', "Owner\OwnerController@ownerList")->name('owners');
+// 	Route::get('owner/create/{rowId?}', "Owner\OwnerController@ownerCreate")->name('owner.create');
+// 	Route::post('owner/store', "Owner\OwnerController@ownerStore")->name('owner.store');
+// 	Route::post('owner/update', "Owner\OwnerController@ownerUpdate")->name('owner.update');
+// 	Route::get('owner/delete/{key}', "Owner\OwnerController@ownerDelete")->name('owner.delete');
+// 	Route::get('owner/status/{key}', "Owner\OwnerController@ownerStatus")->name('owner.status');
 
 
-	// sms package
-	Route::namespace('Owner')
-	->prefix('owner')
-	->group(function(){
-		Route::resource("sms", "SMSPackageController");
-		Route::get("sms/{id}/edit", "SMSPackageController@edit");
-		Route::get("sms/destroy/{id}", "SMSPackageController@destroy");
-	});
+// 	// terms of service
+// 	Route::get('owner/terms', "Owner\OwnerController@showTerms")->name('owner.terms');
+// 	Route::post('owner/terms', "Owner\OwnerController@updateTerms")->name('owner.terms.update');
+
+
+// 	// sms package
+// 	Route::namespace('Owner')
+// 	->prefix('owner')
+// 	->group(function(){
+// 		Route::resource("sms", "SMSPackageController");
+// 		Route::get("sms/{id}/edit", "SMSPackageController@edit");
+// 		Route::get("sms/destroy/{id}", "SMSPackageController@destroy");
+// 	});
 	
-});
-
-
-// test route
-Route::get("test/avg-time/{userId}/{companyId}", 'FrontendController@getAverageTimeOfCompletingToken');
-
-//Cache Clear (sazzad)
-Route::get('/cache-clear', function() {
-    Artisan::call('cache:clear');
-    Artisan::call('route:clear');
-    Artisan::call('config:clear');
-    Artisan::call('view:clear');
-    return "Cache clear successfully";
-});
+// });

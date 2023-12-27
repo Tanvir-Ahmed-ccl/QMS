@@ -4,17 +4,10 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
-/*
-|--------------------------------------------------------------------------
-| API Routes
-|--------------------------------------------------------------------------
-|
-| Here is where you can register API routes for your application. These
-| routes are loaded by the RouteServiceProvider within a group which
-| is assigned the "api" middleware group. Enjoy building your API!
-|
-*/
 
+Route::fallback(function(){
+    return "Api does not exists. Please check the api endpoint";
+});
 
 /** --------------- Route For Auth
  * ============================================*/
@@ -51,3 +44,24 @@ Route::namespace("Api\Auth")
     Route::post("customer/otp", "CustomerAuthController@checkOtpAndLogin");
 
 });
+
+
+/** --------------- Route For Remote Queue Login
+ * ============================================*/
+Route::namespace("Api\RemoteQueue")
+->group(function(){
+
+    Route::post("remote-queue/login", "RemoteQueueController@remoteQueueLogin");
+
+});
+
+
+
+/** --------------- route fallback
+ * ===========================================*/
+Route::any('{any}', function(){
+    return response()->json([
+        'status'    =>  false,
+        'message'   =>  "Api does not exists",
+    ], 404);
+})->where('any', '.*');

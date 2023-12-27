@@ -1,5 +1,5 @@
 @extends('layouts.backend')
-@section('title', "Add User Type")
+@section('title', trans('app.user_type'))
 
 @section('content')
 <div class="panel panel-primary">
@@ -7,7 +7,7 @@
     <div class="panel-heading">
         <div class="row">
             <div class="col-sm-12 text-left">
-                <h3>{{ trans('Add User Type') }}</h3>
+                <h3>{{ trans('app.user_type') }}</h3>
             </div> 
         </div>
     </div>
@@ -16,7 +16,7 @@
         {{ Form::open(['url' => 'admin/user-type/create', 'files' => true]) }}
 
             <div class="form-group @error('name') has-error @enderror">
-                <label for="name">{{ trans('User Type') }} <i class="text-danger">*</i></label>
+                <label for="name">{{ trans('app.user_type') }} <i class="text-danger">*</i></label>
                 <input type="text" name="name" id="name" class="form-control" placeholder="{{ trans('User Type') }}" value="{{ old('name') }}" required> 
                 <span class="text-danger">{{ $errors->first('name') }}</span>
             </div>
@@ -28,7 +28,7 @@
             <div class="row" style="margin-bottom: 15px; justify-content: center">
 
                 <div class="col-md-3" style="margin-bottom: 20px">
-                    <label style="margin-bottom: 10px">{{++$i}}. Location</label>
+                    <label style="margin-bottom: 10px">{{++$i}}. {{ trans('app.location') }}</label>
                     <div class="form-check form-check-inline" style="margin-left: 30px">
                         <input class="form-check-input" name="location_read" value="1" type="checkbox" id="location_read" {{ (issetAccess(Auth::user()->user_role_id)->location['read'] == 1) ? 'checked' : '' }}>
                         <label style="margin-left: 10px; font-weight:normal" for="location_read">Read</label>
@@ -53,7 +53,7 @@
 
 
                 <div class="col-md-3" style="margin-bottom: 20px">
-                    <label style="margin-bottom: 10px">{{++$i}}. Counter</label>
+                    <label style="margin-bottom: 10px">{{++$i}}. {{ trans('app.counter') }}</label>
                     <div class="form-check form-check-inline" style="margin-left: 30px">
                         <input class="form-check-input" name="counter_read" value="1" type="checkbox" id="counter_read" {{ (issetAccess(Auth::user()->user_role_id)->counter['read'] == 1) ? 'checked' : '' }}>
                         <label style="margin-left: 10px; font-weight:normal" for="counter_read">Read</label>
@@ -66,7 +66,7 @@
 
 
                 <div class="col-md-3" style="margin-bottom: 20px">
-                    <label style="margin-bottom: 10px">{{++$i}}. User Type</label>
+                    <label style="margin-bottom: 10px">{{++$i}}. {{ trans('app.user_type') }}</label>
                     <div class="form-check form-check-inline" style="margin-left: 30px">
                         <input class="form-check-input" name="user_type_read" value="1" type="checkbox" id="user_type_read" {{ (issetAccess(Auth::user()->user_role_id)->user_type['read'] == 1) ? 'checked' : '' }}>
                         <label style="margin-left: 10px; font-weight:normal" for="user_type_read">Read</label>
@@ -79,7 +79,7 @@
 
 
                 <div class="col-md-3" style="margin-bottom: 20px">
-                    <label style="margin-bottom: 10px">{{++$i}}. Users</label>
+                    <label style="margin-bottom: 10px">{{++$i}}. {{ trans('app.users') }}</label>
                     <div class="form-check form-check-inline" style="margin-left: 30px">
                         <input class="form-check-input" name="users_read" value="1" type="checkbox" id="users_read" {{ (issetAccess(Auth::user()->user_role_id)->users['read'] == 1) ? 'checked' : '' }}>
                         <label style="margin-left: 10px; font-weight:normal" for="users_read">Read</label>
@@ -91,7 +91,7 @@
                 </div>
 
                 <div class="col-md-3" style="margin-bottom: 20px">
-                    <label style="margin-bottom: 10px">{{++$i}}. SMS</label>
+                    <label style="margin-bottom: 10px">{{++$i}}. {{ trans('app.sms') }}</label>
                     <div class="form-check form-check-inline" style="margin-left: 30px">
                         <input class="form-check-input" name="sms_read" value="1" type="checkbox" id="sms_read" {{ (issetAccess(Auth::user()->user_role_id)->sms['read'] == 1) ? 'checked' : '' }}>
                         <label style="margin-left: 10px; font-weight:normal" for="sms_read">Read</label>
@@ -127,7 +127,7 @@
                 </div>
 
                <div class="col-md-3" style="margin-bottom: 20px">
-                    <label style="margin-bottom: 10px">{{++$i}}. Token Report</label>
+                    <label style="margin-bottom: 10px">{{++$i}}. {{ trans('app.token_report') }}</label>
                     <div class="form-check form-check-inline" style="margin-left: 30px">
                         <input class="form-check-input" name="token_token_report_read" value="1" type="checkbox" id="token_token_report_read" {{ (issetAccess(Auth::user()->user_role_id)->token['token_report']['read'] == 1) ? 'checked' : '' }}>
                         <label style="margin-left: 10px; font-weight:normal" for="token_token_report_read">Read</label>
@@ -139,25 +139,25 @@
                 </div>
 
                 <div class="col-md-3" style="margin-bottom: 20px">
-                    <label style="margin-bottom: 10px">{{++$i}}. Token</label>
+                    <label style="margin-bottom: 10px">{{++$i}}. {{ trans('app.token') }}</label>
                     <div class="form-check form-check-inline" style="margin-left: 30px">
                         <input class="form-check-input" name="token_auto_token" value="1" type="checkbox" id="token_auto_token" {{ (issetAccess(Auth::user()->user_role_id)->token['auto_token'] == 1) ? 'checked' : '' }}>
-                        <label style="margin-left: 10px; font-weight:normal" for="token_auto_token">Auto Token</label>
+                        <label style="margin-left: 10px; font-weight:normal" for="token_auto_token">{{ trans('app.auto_token') }}</label>
                     </div>
 
                     <div class="form-check form-check-inline" style="margin-left: 30px">
                         <input class="form-check-input" name="token_manual_token" value="1" type="checkbox" id="token_manual_token" {{ (issetAccess(Auth::user()->user_role_id)->token['manual_token'] == 1) ? 'checked' : '' }}>
-                        <label style="margin-left: 10px; font-weight:normal" for="token_manual_token">Manual Token</label>
+                        <label style="margin-left: 10px; font-weight:normal" for="token_manual_token">{{ trans('app.manual_token') }}</label>
                     </div>
 
                     <div class="form-check form-check-inline" style="margin-left: 30px">
                         <input class="form-check-input" name="token_performance_report" value="1" type="checkbox" id="token_performance_report" {{ (issetAccess(Auth::user()->user_role_id)->token['performance_report'] == 1) ? 'checked' : '' }}>
-                        <label style="margin-left: 10px; font-weight:normal" for="token_performance_report">Performance Report</label>
+                        <label style="margin-left: 10px; font-weight:normal" for="token_performance_report">{{ trans('app.performance_report') }}</label>
                     </div>
 
                     <div class="form-check form-check-inline" style="margin-left: 30px">
                         <input class="form-check-input" name="token_auto_token_setting" value="1" type="checkbox" id="token_auto_token_setting" {{ (issetAccess(Auth::user()->user_role_id)->token['auto_token_setting'] == 1) ? 'checked' : '' }}>
-                        <label style="margin-left: 10px; font-weight:normal" for="token_auto_token_setting">Auto Token Setting</label>
+                        <label style="margin-left: 10px; font-weight:normal" for="token_auto_token_setting">{{ trans('app.auto_token_setting') }}</label>
                     </div>
                 </div>
 
@@ -166,7 +166,7 @@
                     <label style="margin-bottom: 10px">{{++$i}}. Settings</label>
                     <div class="form-check form-check-inline" style="margin-left: 30px">
                         <input class="form-check-input" name="setting_app_setting" value="1" type="checkbox" id="setting_app_setting" {{ (issetAccess(Auth::user()->user_role_id)->setting['app_setting'] == 1) ? 'checked' : '' }}>
-                        <label style="margin-left: 10px; font-weight:normal" for="setting_app_setting">App Settings</label>
+                        <label style="margin-left: 10px; font-weight:normal" for="setting_app_setting">{{ trans('app.app_setting') }}</label>
                     </div>
 
                     <div class="form-check form-check-inline" style="margin-left: 30px">
@@ -176,7 +176,7 @@
 
                     <div class="form-check form-check-inline" style="margin-left: 30px">
                         <input class="form-check-input" name="setting_display_setting" value="1" type="checkbox" id="setting_display_setting" {{ (issetAccess(Auth::user()->user_role_id)->setting['display_setting'] == 1) ? 'checked' : '' }}>
-                        <label style="margin-left: 10px; font-weight:normal" for="setting_display_setting">Display Settings</label>
+                        <label style="margin-left: 10px; font-weight:normal" for="setting_display_setting">{{ trans('app.display_setting') }}</label>
                     </div>
 
                     <div class="form-check form-check-inline" style="margin-left: 30px">
@@ -192,7 +192,7 @@
                     
                     <div class="form-check form-check-inline" style="margin-left: 30px">
                         <input class="form-check-input" name="display" value="1" type="checkbox" id="display" {{ (issetAccess(Auth::user()->user_role_id)->display == 1) ? 'checked' : '' }}>
-                        <label style="margin-left: 10px; font-weight:normal" for="display">Display</label>
+                        <label style="margin-left: 10px; font-weight:normal" for="display">{{ trans('app.display') }}</label>
                     </div>
 
                     <div class="form-check form-check-inline" style="margin-left: 30px">

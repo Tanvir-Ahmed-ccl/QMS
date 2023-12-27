@@ -63,6 +63,14 @@ return [
     'description'       => 'Descripción',
     'key_for_keyboard_mode' => 'Tecla para modo teclado',
 
+    /*service*/
+    'service'        => 'Service',
+    'service_name'        => 'Service Name',
+    'new_service'    => 'Add Service',
+    'service_list'   => 'Service List',
+    'update_service' => 'Update Service',
+
+
     /*Counter*/
     'counter'      => 'Contador',
     'add_counter'  => 'Añadir Contador',
@@ -175,4 +183,19 @@ return [
     'show_mobile_no'  => 'Mostrar número de móvil',
     'show_officer'    => 'Oficial de pantalla',
     'show_department' => 'Departamento de visualización',
+
+    /*Appointment*/
+    'appointment'        => 'Appointment',
+
+    /** User Type */
+    'user_type' => 'User Type',
+    'add_type' => 'Add Type',
+    'type_list' => 'Type List',
+
+    // Remote Queue
+    'remote_queue' => 'Remote Queue',
+
+    // advertisement
+    'advertisement' => 'Advertisement',
+    'ads' => 'ads',
 ];

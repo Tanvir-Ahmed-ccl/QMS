@@ -44,8 +44,16 @@
                         <td>
                             <button class="btn btn-sm btn-success">Active</button>
                         </td>
-                        <td>
-                            <form action="{{route('advertisement.destroy', $ads->id)}}" method="POST" id="DeleteForm">
+                        <td class="text-nowrap">
+
+                            <a 
+                                href="javascript::" 
+                                class="btn btn-sm btn-danger" 
+                                title="Delete"
+                                onclick="if(confirm('Are You Sure?')){location.replace('{{route('advertisement.edit', $ads->id)}}')}"
+                            > <i class="fa fa-edit"></i> </a>
+
+                            <form action="{{route('advertisement.destroy', $ads->id)}}" method="POST" id="DeleteForm{{$ads->id}}">
                                 @method("DELETE")
                                 @csrf
                             </form>
@@ -53,7 +61,7 @@
                                 href="javascript::" 
                                 class="btn btn-sm btn-danger" 
                                 title="Delete"
-                                onclick="if(confirm('Are You Sure?')){document.getElementById('DeleteForm').submit()}"
+                                onclick="if(confirm('Are You Sure?')){document.getElementById('DeleteForm{{$ads->id}}').submit()}"
                             >
                                 <i class="fa fa-trash"></i>
                             </a>

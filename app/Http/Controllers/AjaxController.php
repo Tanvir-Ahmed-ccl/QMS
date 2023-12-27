@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Counter;
+use App\Models\Department;
 use App\Models\Token;
 use App\Models\TokenSetting;
 use App\Models\User;
@@ -15,6 +17,8 @@ class AjaxController extends Controller
     {
         $data = $request->only('selectedDate', 'companyId', 'departmentId', 'sectionId');
 
+        @date_default_timezone_set(companyDetails($request->companyId)->timezone);
+
         $openTime = date("H:i", strtotime(companyDetails($data['companyId'])->opening_time));
         $closeTime = date("H:i", strtotime(companyDetails($data['companyId'])->closing_time));
 
@@ -22,19 +26,38 @@ class AjaxController extends Controller
                     <select name="time" class="form-select">
                         <option value="" selected disabled>Select One</option>';
 
-        for ($i=1; $i<1000000; $i++)
+        for ($i=1; $i<600; $i++)
         {
             if($openTime >= $closeTime){
                 break;
             }
 
-            $token = Token::where('department_id', $data['departmentId'])
+            if($openTime > date("H:i") && $request->selectedDate == date("Y-m-d"))
+            {
+                $token = Token::where('department_id', $data['departmentId'])
                     ->where('section_id', $request['sectionId'])
                     ->where('created_at', "=", date('Y-m-d H:i:s', strtotime($data['selectedDate']. ' ' . $openTime)));
 
-            if(!$token->exists())
+                if(!$token->exists())
+                {
+                    $html .= '<option value="'.$openTime.'"> '.$openTime.' </option>';
+                }
+            }
+            elseif($request->selectedDate > date("Y-m-d"))
             {
-                $html .= '<option value="'.$openTime.'"> '.$openTime.' </option>';
+                $token = Token::where('department_id', $data['departmentId'])
+                    ->where('section_id', $request['sectionId'])
+                    ->where('created_at', "=", date('Y-m-d H:i:s', strtotime($data['selectedDate']. ' ' . $openTime)));
+
+                if(!$token->exists())
+                {
+                    $html .= '<option value="'.$openTime.'"> '.$openTime.' </option>';
+                }
+            }
+            elseif($request->selectedDate < date("Y-m-d"))
+            {
+                $html .= '<option value="">Not Available</option>';
+                break;
             }
             
             $openTime = \Carbon\Carbon::parse($openTime)->addMinutes(5)->format("H:i");
@@ -54,9 +77,7 @@ class AjaxController extends Controller
                     ->get();
         
         $html = '<label for="section_id">Service<i class="text-danger">*</i></label><br/>
-                        <select name="section_id" class="form-control"
-                            onchange="loadCounter(this.value)"
-                        >
+                        <select name="section_id" class="form-control js-select" multiple>
                             <option value="">Select One</option>';
 
 
@@ -68,6 +89,47 @@ class AjaxController extends Controller
         $html .= "</select>";
 
         return $html;
+    }
+
+    public function optionOnlyForSection(Request $request)
+    {
+        $counter = TokenSetting::where('department_id', $request->key)
+                    ->get();
+
+        $html = "";          
+        foreach($counter as $item)
+        {
+            $html .= '<option value="'. $item->section->id .'">'. $item->section->name .'</option>';
+        }
+
+        return $html;
+    }
+
+    public function getTokenInfo(Request $request)
+    {
+        $token = Token::find($request->tokenId);
+        $services = json_decode($token->services);
+        $departments = Department::where('company_id', auth()->user()->company_id)->where('status',1)->pluck('name','id');
+        $sections = TokenSetting::where('department_id', $token->department_id)->get();
+
+        $section = "";     
+        foreach($sections as $item)
+        {
+            if(in_array($item->section_id, $services)):
+                $selected = "selected";
+            else:
+                $selected = "";
+            endif;
+
+            $section .= '<option value="'. $item->section->id .'" '.$selected.'>'. $item->section->name .'</option>';
+        }
+
+        return response()->json([
+            'token' =>  $token,
+            'services'  =>  $services,
+            'sections'  =>  $section,
+            'departments'  =>  $departments,
+        ]);
     }
 
 
@@ -256,5 +318,35 @@ class AjaxController extends Controller
     protected function makeCarbonFormat($time)
     {
         return \Carbon\Carbon::createFromFormat('Y-m-d H:i:s', $time);
+    }
+
+
+    /** get counter from department */
+    public function getCounterFromDepartment(Request $request)
+    {
+        $counter = Counter::where('company_id', $request->company)->where('department_id', $request->department)->get();
+        $counterOptions = '<option value="" selected>Select Option</option>';
+
+        foreach($counter as $item)
+        {
+            $counterOptions .= '<option value="'. $item->id .'">'. $item->name .'</option>';
+        }
+
+        $officer = User::where('company_id', $request->company)->where('department_id', $request->department)->get();
+        $officerOptions = '<option value="" selected>Select Option</option>';
+
+        foreach($officer as $item)
+        {
+            $officerOptions .= '<option value="'. $item->id .'">'. $item->firstname . ' ' . $item->lastname .'</option>';
+        }
+
+        return response()->json([
+            'request'   =>  $request,
+            'counter'   =>  $counter,
+            'officer'   =>  $officer,
+            'counterOptions'    =>  $counterOptions,
+            'officerOptions'    =>  $officerOptions,
+        ]);
+
     }
 }

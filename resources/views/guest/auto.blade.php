@@ -12,9 +12,28 @@
         display: block !important;
     }
 </style>
+
 <div class="panel panel-primary" id="toggleScreenArea">
     <div class="panel-body">
+        <div class="row">
+            <div class="col-12">
+                <div class="owl-carousel owl-theme">
+                    @forelse (\App\Ads::selfData($company->company_id) as $item)
+                        <div class="item">
+                            <a href="{{$item->link}}" target="_blank">
+                                <img src="{{asset($item->images)}}" alt="banner" class="img-fluid" style="height: 100px; width: 100%; margin: auto auto">
+                            </a>
+                        </div>
+                    @empty
+                        
+                    @endforelse
+                </div>
+            </div>            
+        </div>
+
+
         <div class="row text-center" id="screen-content">
+
             <!-- With Mobile No -->
             @foreach ($departmentList as $department)
             <div class="col-sm-3 bg-primary capitalize text-center p-1 m-1">
@@ -46,21 +65,13 @@
             
         </div>  
 
-        <div class="row" style="margin-top: 20px">
-            <div class="col-12">
-                <div class="owl-carousel owl-theme">
-                    @forelse (\App\Ads::selfData($company->company_id) as $item)
-                        <div class="item">
-                            <a href="{{$item->link}}" target="_blank">
-                                <img src="{{asset($item->images)}}" alt="banner" class="img-fluid" style="height: 300px; width: 800px;">
-                            </a>
-                        </div>
-                    @empty
-                        
-                    @endforelse
-                </div>
+        @if (!is_null($setting->announcement))
+        <div class="row">
+            <div class="col-12" style="background-color: #000; color: red">
+                <h2 style="font-weight: bolder"><marquee direction="rtl">{{ $setting->announcement }}</marquee></h2>
             </div>
         </div>
+        @endif
     </div> 
 </div>  
 
@@ -95,8 +106,14 @@
 
 
         <div id="after-otp" style="display: none">
+        {{-- <div id="after-otp"> --}}
 
             <input name="client_mobile" type="hidden" id="success_mobile" class="form-control">
+            
+            {{-- <div class="form-group mb-3">
+                Mobile Number <span class="text-danger">*</span>(<span class="text-info">Ex: {{companyDetails($company->company_id)->example_phone}}</span>)
+                <input name="client_mobile" type="tel" id="mobile" class="form-control" value="{{$setting->country_code}}" placeholder="{{ trans('app.client_mobile') }}" required>
+            </div> --}}
             
             <p >
                 <label for="">Services</label>
@@ -425,18 +442,21 @@
 
                     if(data.services != null)
                     {
-                        content += `<div style="display:flex;justify-content:center;align-items:center;margin-bottom:10px" class="d-flex justify-content-center align-items-center mb-3">`;
+                        content += `<div style="display:block;margin-bottom:10px"><center>`;
                         
-                        data.services.forEach((value, key) => {
-                            content += `<button class="btn btn-sm btn-primary fw-bolder">${value}</button>`;
-
-                            if(data.services.length < ++key)
+                        for(key in data.services)
+                        {
+                            if(key == data.token.section_id)
                             {
-                                content += `<i class="bi bi-arrow-right my-auto mx-4" style="font-size: 24px"></i>`;
+                                content += `<button class="btn btn-sm btn-success" style="margin-right:3px">${data.services[key]}</button>`;
                             }
-                        });
+                            else
+                            {
+                                content += `<button class="btn btn-sm btn-primary" style="margin-right:3px">${data.services[key]}</button>`;
+                            }
+                        }
 
-                        content += `</div>`;
+                        content += `</center></div>`;
                     }                   
 
                     content +="<ul class=\"list-unstyled\">";
@@ -456,8 +476,13 @@
                     // $("#getTokenModal").modal('show');
 
                     let serialInerval = setInterval(() => {
-                        count_serialNumber(data.tokenInfo);
+                        count_serialNumber(data.token);
                     }, 1000*10);
+
+                    setTimeout(() => {
+                        tokenRefresh(data.token);
+                    }, 1000*10);
+
 
                     $("input[name=client_mobile]").val("");
                     $("textarea[name=note]").val("");
@@ -554,7 +579,7 @@
                 counterId: tokenInfo.counter_id,
                 companyId: tokenInfo.company_id,
                 userId: tokenInfo.user_id,
-                rowId: tokenInfo.rowId,
+                rowId: tokenInfo.id,
                 mobile: tokenInfo.client_mobile,
                 companyName: tokenInfo.title,
             },
@@ -587,6 +612,96 @@
         })
     }
 }(jQuery));
+</script>
+
+<script>
+    let tokenRefresh = (token) => {
+        console.log(token);
+
+        $.ajax({
+            url: "{{route('qr.token.refresh')}}",
+            type: "POST",
+            data:{
+                "_token": "{{csrf_token()}}",
+                token: token
+            },
+            success: (data) => {
+                console.log(data);
+
+                if (data.status)
+                {
+                    var content = "<style type=\"text/css\">@media print {"+
+                        "html, body {display:block;margin:0!important; padding:0 !important;overflow:hidden;display:table;}"+
+                        ".receipt-token {width:100vw;height:100vw;text-align:center}"+
+                        ".receipt-token h4{margin:0;padding:0;font-size:7vw;line-height:7vw;text-align:center}"+
+                        ".receipt-token h1{margin:0;padding:0;font-size:15vw;line-height:20vw;text-align:center}"+
+                        ".receipt-token ul{margin:0;padding:0;font-size:7vw;line-height:8vw;text-align:center;list-style:none;}"+
+                        "}</style>";
+
+                    content += "<div class=\"receipt-token\">";
+                    content += "<h4>"+data.title+"</h4>";
+                    content += "<h1>"+data.token.token_no+"</h1>";
+
+                    if(data.services != null)
+                    {
+                        content += `<div style="display:block;margin-bottom:10px"><center>`;
+                        
+                        for(key in data.services)
+                        {
+                            if(key == data.token.section_id)
+                            {
+                                content += `<button class="btn btn-sm btn-success" style="margin-right:3px">${data.services[key]}</button>`;
+                            }
+                            else
+                            {
+                                content += `<button class="btn btn-sm btn-primary" style="margin-right:3px">${data.services[key]}</button>`;
+                            }
+                        }
+
+                        content += `</center></div>`;
+                    }                   
+
+                    content +="<ul class=\"list-unstyled\">";
+                    // content += "<li><p id=\"token-headr\"><strong class=\"text-success h3\" id=\"token-serial\">"+data.serial+"</strong> person left</p></li>";
+                    // content += "<li><p><strong class=\"text-success h4\">Approximate waiting time: <b> <span class=\"text-danger\" id=\"apx_time\">"+data.tokenInfo.aprx_time+"</span> </b> minutes</strong></p></li>";
+                    content += "<li><strong>{{ trans('app.department') }} </strong>"+data.token.department+"</li>";
+                    content += "<li><strong>{{ trans('app.service') }} </strong>"+data.token.section+"</li>";
+                    content += "<li><strong>{{ trans('app.counter') }} </strong>"+data.token.counter+"</li>";
+                    content += "<li><strong>{{ trans('app.officer') }} </strong>"+data.token.firstname+' '+data.token.lastname+"</li>";
+                    content += "<li><strong>{{ trans('app.date') }} </strong>"+data.token.created_at+"</li>";
+                    content += "</ul>";
+                    content += "</div>";
+                    
+                    // print 
+                    $("#screen-content").html(content);
+                }
+                else
+                {
+                    var content = "<style type=\"text/css\">@media print {"+
+                        "html, body {display:block;margin:0!important; padding:0 !important;overflow:hidden;display:table;}"+
+                        ".receipt-token {width:100vw;height:100vw;text-align:center}"+
+                        ".receipt-token h4{margin:0;padding:0;font-size:7vw;line-height:7vw;text-align:center}"+
+                        ".receipt-token h1{margin:0;padding:0;font-size:15vw;line-height:20vw;text-align:center}"+
+                        ".receipt-token ul{margin:0;padding:0;font-size:7vw;line-height:8vw;text-align:center;list-style:none;}"+
+                        "}</style>";
+
+                    content += "<div class=\"receipt-token\">";
+                    content += "<h4>"+data.title+"</h4>";
+                    content += "<h1>"+data.token.token_no+"</h1>";
+                    content += "<div><h1>"+data.message+"</h1></div>";
+
+                    $("#screen-content").html(content);
+                }
+
+                setTimeout(() => {
+                    tokenRefresh(data.token);
+                }, 1000*10);
+            },
+            error: (error) => {
+                console.log(error);
+            }
+        });
+    }
 </script>
 @endpush
  

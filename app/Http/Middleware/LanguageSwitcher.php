@@ -21,7 +21,7 @@ class LanguageSwitcher
     public function handle($request, Closure $next)
     {
         $locale1 = Session::get('locale');
-        $locale2 = DB::table('setting')->first()->language;
+        $locale2 = (DB::table('setting')->first()) ? DB::table('setting')->first()->language : null;
         $locale3 = Config::get('app.locale');
 
         if (!empty($locale1)) {

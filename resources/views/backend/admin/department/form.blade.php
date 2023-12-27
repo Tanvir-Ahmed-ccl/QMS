@@ -33,6 +33,19 @@
                 <span class="text-danger">{{ $errors->first('key') }}</span>
             </div>
 
+            {{-- <div class="form-group @error('app_id') has-error @enderror">
+                <label for="key">App ID <i class="text-danger">*</i></label><br/>
+                <input type="text" class="form-control" name="app_id" placeholder="XXXXXX" readonly>
+                <button class="btn-sm btn-primary" onclick="event.preventDefault()">Generate App ID</button>
+                <span class="text-danger">{{ $errors->first('app_id') }}</span>
+            </div>
+
+            <div class="form-group @error('password') has-error @enderror">
+                <label for="key">Password <i class="text-danger">*</i></label><br/>
+                <input type="password" class="form-control" name="password">
+                <span class="text-danger">{{ $errors->first('password') }}</span>
+            </div> --}}
+
             <div class="form-group @error('status') has-error @enderror">
                 <label for="status">{{ trans('app.status') }} <i class="text-danger">*</i></label>
                 <div id="status"> 

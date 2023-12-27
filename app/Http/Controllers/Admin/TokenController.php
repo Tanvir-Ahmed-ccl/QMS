@@ -12,6 +12,7 @@ use App\Models\Counter;
 use App\Models\Token;
 use App\Models\DisplaySetting;
 use App\Models\Section;
+use App\Models\Setting;
 use App\Models\TokenSetting;
 use App\Models\SmsSetting;
 use App\Models\SmsHistory;
@@ -34,6 +35,7 @@ class TokenController extends Controller
                 // ->leftJoin('sections', 'token_setting.section_id', '=', 'sections.id')
                 ->leftJoin('counter', 'token_setting.counter_id', '=', 'counter.id')
                 ->leftJoin('user', 'token_setting.user_id', '=', 'user.id')
+                ->groupBy('user_id')
                 ->get();
  
         $countertList = Counter::where('company_id', auth()->user()->company_id)->where('status',1)->pluck('name','id');
@@ -65,22 +67,31 @@ class TokenController extends Controller
                         ->withInput();
         } else { 
 
-            $save = TokenSetting::updateOrInsert(
-                [
-                    'department_id' => $request->department_id,
-                    'counter_id'    => $request->counter_id, 
-                    'user_id'       => $request->user_id, 
-                ],
-                [
-                    'section_id' => $request->section_id[0],
-                    'services' => json_encode($request->section_id),
-                    'created_at'    => date('Y-m-d H:i:s'),
-                    'updated_at'    => null,
-                    'status'        => 1
-                ]
-            );
+            if(is_array($request->section_id) && count($request->section_id) > 0)
+            {
+                foreach($request->section_id as $item)
+                {
+                    TokenSetting::insert(
+                        [
+                            'department_id' => $request->department_id,
+                            'counter_id'    => $request->counter_id, 
+                            'user_id'       => $request->user_id, 
+                            'section_id' => $item,
+                            'services' => json_encode($request->section_id),
+                            'created_at'    => date('Y-m-d H:i:s'),
+                            'updated_at'    => null,
+                            'status'        => 1
+                        ]
+                    );
 
-            if ($save) {
+                    $save = true;
+                }
+
+                $save = true;
+            }
+            
+
+            if (isset($save) && $save == true) {
                 return back()->withInput()->with('message',  trans('app.setup_successfully'));
             } else {
                 return back()->withInput()->with('exception', trans('app.please_try_again'));
@@ -91,7 +102,12 @@ class TokenController extends Controller
  
     public function tokenDeleteSetting($id = null)
     {
-        TokenSetting::where('id', $id)->delete();
+        $row = TokenSetting::find($id);
+
+        TokenSetting::where('department_id', $row->department_id)
+        ->whereIn('section_id', json_decode($row->services))
+        ->delete();
+
         return back()->with('message', trans('app.delete_successfully'));
     } 
  
@@ -939,7 +955,106 @@ class TokenController extends Controller
     {
         @date_default_timezone_set(session('app.timezone'));
         
-        Token::where('id', $id)->update(['updated_at' => date('Y-m-d H:i:s'), 'status' => 1, 'sms_status' => 1]);
+        $token = Token::find($id);
+
+        $multiServices = (is_null($token->services)) ? [] : json_decode($token->services);
+
+        if(!is_null($multiServices) && is_array($multiServices) && count($multiServices) > 1)
+        {
+            // delete old services
+            $key = array_search($token->section_id, $multiServices);
+            array_splice($multiServices, $key, 1);
+            // return $multiServices;
+
+            // find auto-setting
+            $settings = TokenSetting::select('counter_id','section_id','department_id','user_id','created_at')
+                    ->where('department_id', $token->department_id)
+                    ->whereIn('section_id', $multiServices)
+                    ->groupBy('user_id')
+                    ->get();
+
+            $sameOfficer = TokenSetting::select('counter_id','section_id','department_id','user_id','created_at')
+                    ->where('department_id', $token->department_id)
+                    ->whereIn('section_id', $multiServices)
+                    ->where('user_id', $token->user_id)
+                    ->first();
+
+            if($sameOfficer)
+            {
+                $saveToken = [
+                    'company_id'    => $token->company_id,
+                    'token_no'      => $token->token_no,
+                    'client_mobile' => $token->client_mobile,
+                    'department_id' => $sameOfficer['department_id'],
+                    'section_id'    => $sameOfficer['section_id'],
+                    'services'      => json_encode($multiServices),
+                    'counter_id'    => $sameOfficer['counter_id'],
+                    'user_id'       => $sameOfficer['user_id'],
+                    'note'          => $token->note, 
+                    'created_by'    => 0,
+                    'created_at'    => date('Y-m-d H:i:s'), 
+                    'updated_at'    => null,
+                    'status'        => 0 
+                ];
+            }
+            else{
+
+                if (!empty($settings) AND count($settings) > 0) 
+                { 
+                    foreach ($settings as $setting) {
+                        //compare each user in today
+                        $tokenData = Token::select('department_id','counter_id','section_id','user_id',DB::raw('COUNT(user_id) AS total_tokens'))
+                                ->where('department_id',$setting->department_id)
+                                ->where('counter_id',$setting->counter_id)
+                                ->where('user_id',$setting->user_id)
+                                ->where('status', 0)
+                                ->whereRaw('DATE(created_at) = CURDATE()')
+                                ->orderBy('total_tokens', 'asc')
+                                ->groupBy('user_id')
+                                ->first();
+
+                        //create user counter list
+                        $tokenAssignTo[] = [
+                            'total_tokens'  => (!empty($tokenData->total_tokens)?$tokenData->total_tokens:0),
+                            'department_id' => $setting->department_id,
+                            'section_id' => $setting->section_id,
+                            'counter_id'    => $setting->counter_id,
+                            'user_id'       => $setting->user_id
+                        ]; 
+                    }
+
+                    // findout min counter set to 
+                    $min = min($tokenAssignTo);
+                    $saveToken = [
+                        'company_id'    => $token->company_id,
+                        'token_no'      => $token->token_no,
+                        'client_mobile' => $token->client_mobile,
+                        'department_id' => $min['department_id'],
+                        'section_id'    => $min['section_id'],
+                        'services'      => json_encode($multiServices),
+                        'counter_id'    => $min['counter_id'],
+                        'user_id'       => $min['user_id'],
+                        'note'          => $token->note, 
+                        'created_by'    => 0,
+                        'created_at'    => date('Y-m-d H:i:s'), 
+                        'updated_at'    => null,
+                        'status'        => 0 
+                    ];
+                }
+            }
+
+
+        }
+        
+        // update complete token
+        $token->update(['updated_at' => date('Y-m-d H:i:s'), 'status' => 1, 'sms_status' => 1]);
+
+        
+        if(isset($saveToken)) // create new Token
+        {
+            $token = Token::create($saveToken);
+        }
+
         return redirect()->back()->with('message', trans('app.complete_successfully'));
     } 
 

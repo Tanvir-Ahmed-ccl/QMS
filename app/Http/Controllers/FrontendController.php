@@ -23,7 +23,8 @@ class FrontendController extends Controller
 {
     public function home()
     {
-        return view('frontend.index');
+        return redirect(route('login'));
+        //return view('frontend.index');
     }
 
     public function refreshCaptcha()
@@ -321,21 +322,21 @@ class FrontendController extends Controller
                 if ($token) { 
 
                     // $token = null;
-                    // //retrive token info
-                    // $token = Token::select(
-                    //         'token.*', 
-                    //         'department.name as department', 
-                    //         'counter.name as counter',
-                    //         'sections.name as section',
-                    //         'user.firstname',
-                    //         'user.lastname'
-                    //     )
-                    //     ->leftJoin('department', 'token.department_id', '=', 'department.id')
-                    //     ->leftJoin('sections', 'token.section_id', '=', 'sections.id')
-                    //     ->leftJoin('counter', 'token.counter_id', '=', 'counter.id')
-                    //     ->leftJoin('user', 'token.user_id', '=', 'user.id') 
-                    //     // ->where('token.id', $insert_id)
-                    //     ->first(); 
+                    //retrive token info
+                    $token = Token::select(
+                            'token.*', 
+                            'department.name as department', 
+                            'counter.name as counter',
+                            'sections.name as section',
+                            'user.firstname',
+                            'user.lastname'
+                        )
+                        ->leftJoin('department', 'token.department_id', '=', 'department.id')
+                        ->leftJoin('sections', 'token.section_id', '=', 'sections.id')
+                        ->leftJoin('counter', 'token.counter_id', '=', 'counter.id')
+                        ->leftJoin('user', 'token.user_id', '=', 'user.id') 
+                        ->where('token.id', $token->id)
+                        ->first(); 
 
                     // token serial
                     $tokenSerial = Token::where('id', '<', $token->id)->where([
@@ -352,10 +353,9 @@ class FrontendController extends Controller
 
                     if(!is_null($token->services))
                     {
-                        $services = Section::whereIn('id', json_decode($token->services))->pluck('name')->toArray();
+                        $services = Section::whereIn('id', json_decode($token->services))->pluck('name', 'id')->toArray();
                     }
                     
-
                     DB::commit();
                     $data['status'] = true;
                     $data['message'] = trans('app.token_generate_successfully');
@@ -479,7 +479,11 @@ class FrontendController extends Controller
 
     public function getSection(Request $request)
     {
-        $rows = TokenSetting::where('department_id', $request->departmentId)->latest()->get();
+        $rows = TokenSetting::where('department_id', $request->departmentId)
+                ->latest()
+                ->groupBy('department_id')
+                ->groupBy('user_id')
+                ->get();
 
         if($rows->count() > 0)
         {
@@ -569,6 +573,7 @@ class FrontendController extends Controller
     public function guestTokenSerial(Request $request)
     {
         // token serial
+        // return $request;
         $tokenSerial = Token::where('id', '<=', $request->rowId)
                         ->where([
                             'company_id'    => $request->companyId,
@@ -669,5 +674,10 @@ class FrontendController extends Controller
         $terms = AppSettings::first()->terms;
 
         return view('terms', compact('terms'));
+    }
+
+    public function showPrivacy()
+    {
+        return view("privacy");
     }
 }

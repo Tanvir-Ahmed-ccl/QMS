@@ -19,8 +19,8 @@
             <div class="col-sm-3 mb-4">
                 <div class="card">
                     <div class="card-body text-center">
-                        {{-- {!! QrCode::size(250)->generate('ItSolutionStuff.com'); !!} --}}
-                        <img src="{{ asset(getCompanyDetails(Auth::id())->qrcode) }}" alt="QR Code" width="200">
+                        {!! QrCode::size(250)->generate(route('guestLogin', companyOwner(Auth::id())->token)); !!}
+                        
                         <h5><b>SCAN ME</b></h5>
 
                         <a 

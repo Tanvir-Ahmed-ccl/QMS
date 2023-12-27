@@ -22,7 +22,36 @@
 
     <div class="panel-body" id="printThis"> 
         <div class="row">
-            
+            @if(isset($ads))
+            <div class="col-sm-12 panel-body table-responsive">
+                <form action="{{route('advertisement.update', $ads->id)}}" class="col-md-7 col-sm-8" method="post" enctype="multipart/form-data">
+                    @csrf
+                    @method("PUT")
+
+                    <div class="form-group @error('title') has-error @enderror">
+                        <label for="time">Title<i class="text-danger">*</i> </label>
+                        <input type="text" name="title" class="form-control" value="{{$ads->title}}" required> 
+                        <span class="text-danger">{{ $errors->first('title') }}</span>
+                    </div>
+
+                    <div class="form-group @error('link') has-error @enderror">
+                        <label for="time">Link </label>
+                        <input type="text" name="link" class="form-control" placeholder="https://xyz.com" value="{{$ads->link}}"> 
+                        <span class="text-danger">{{ $errors->first('link') }}</span>
+                    </div>
+
+                    <div class="form-group @error('banner') has-error @enderror">
+                        <label for="time">Banner <i class="text-danger">*</i></label><br>
+                        <img src="{{asset($ads->images)}}" alt="" width="200">
+                        <input type="file" name="banner" class="form-control"> 
+                        <span class="text-danger">{{ $errors->first('banner') }}</span>
+                    </div>
+
+
+                    <button class="btn btn-primary">Save</button>
+                </form>
+            </div>
+            @else
             <div class="col-sm-12 panel-body table-responsive">
                 <form action="{{route('advertisement.store')}}" class="col-md-7 col-sm-8" method="post" enctype="multipart/form-data">
                     @csrf
@@ -32,7 +61,7 @@
                         <input type="text" name="title" class="form-control" placeholder="" required> 
                         <span class="text-danger">{{ $errors->first('title') }}</span>
                     </div>
-
+[]
                     <div class="form-group @error('link') has-error @enderror">
                         <label for="time">Link </label>
                         <input type="text" name="link" class="form-control" placeholder="https://xyz.com"> 
@@ -40,7 +69,7 @@
                     </div>
 
                     <div class="form-group @error('banner') has-error @enderror">
-                        <label for="time">Banner <i class="text-danger">*</i></label>
+                        <label for="time">Banner <i class="text-danger">*</i></label> (Recommended size: 1024 px * 250 px)
                         <input type="file" name="banner" class="form-control" required> 
                         <span class="text-danger">{{ $errors->first('banner') }}</span>
                     </div>
@@ -49,6 +78,7 @@
                     <button class="btn btn-primary">Save</button>
                 </form>
             </div>
+            @endif
         </div>
     </div> 
 </div>  

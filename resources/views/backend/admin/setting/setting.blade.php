@@ -159,7 +159,7 @@
             </div>
             
             {{-- reminder set --}}
-            <div class="form-group @error('reminder_for_booking') has-error @enderror">
+            {{-- <div class="form-group @error('reminder_for_booking') has-error @enderror">
                 <label for="reminder_for_booking">Set reminder for booking<i class="text-danger">*</i></label><br/>
                 <input 
                     name="reminder_for_booking"
@@ -169,17 +169,16 @@
                     value="{{$setting->reminder_for_booking}}" 
                     required
                 />
-            </div>
+            </div> --}}
 
             {{-- Announcement --}}
             <div class="form-group @error('reminder_for_booking') has-error @enderror">
-                <label for="announcement">Announcement</label><br/>
+                <label for="announcement">Announcement (If you type anything here, the system will stop and show the announcement)</label><br/>
                 <textarea 
                     name="announcement"
                     class="form-control"
                     placeholder="Type a Announcement"
                     rows="5"
-                    required
                 >{{$setting->announcement}}</textarea>
             </div>
 

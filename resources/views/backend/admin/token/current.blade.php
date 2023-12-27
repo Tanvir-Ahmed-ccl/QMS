@@ -108,6 +108,10 @@
                                             data-token-id='{{ $token->id }}' class="btn btn-primary btn-sm"
                                             title="Transfer"><i class="fa fa-exchange"></i></button>
 
+                                        <button type="button" data-toggle="modal" data-target=".editModal"
+                                            data-token-id='{{ $token->id }}' onclick="loadTokenContent('{{$token->id}}')" class="btn btn-primary btn-sm"
+                                            title="Edit"><i class="fa fa-edit"></i></button>
+
                                         <a href="{{ url("admin/token/stoped/$token->id") }}" class="btn btn-warning btn-sm"
                                             onclick="return confirm('Are you sure?')" title="Stoped"><i
                                                 class="fa fa-stop"></i></a>
@@ -186,6 +190,41 @@
             {{ Form::close() }}
         </div>
     </div>
+
+    <!-- Token Edit -->
+    <div class="modal fade editModal" tabindex="-1" role="dialog" aria-labelledby="transferModalLabel">
+        <div class="modal-dialog" role="document">
+            {{ Form::open(['url' => 'admin/token/update/service', 'class' => 'tokenForm']) }}
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+                            aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title" id="transferModalLabel">{{ trans('app.transfer_a_token_to_another_counter') }}
+                    </h4>
+                </div>
+                <div class="modal-body">
+                    <div class="alert hide"></div>
+                    <input type="hidden" name="id">
+
+                    <p>
+                        <label for="department_id" class="control-label">{{ trans('app.department') }} </label><br />
+                        <select name="department_id" class="form-control loadDepartment" onchange="loadServiceOptionOnly(this.value)"></select>
+                    </p>
+
+                    <p>
+                        <label for="section_id" class="control-label">{{ trans('app.service') }} </label><br />
+                        <select name="section_id[]" class="form-control loadSection" multiple></select>
+                    </p>
+
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                    <button class="button btn btn-success" type="submit"><span>{{ trans('Save Changes') }}</span></button>
+                </div>
+            </div>
+            {{ Form::close() }}
+        </div>
+    </div>
 @endsection
 
 @push('scripts')
@@ -199,8 +238,26 @@
                     key: locationId
                 },
                 success: (resp) => {
-                    // console.log(resp);
                     $("#loadedSection").html(resp);
+                    $(".loadedSection").html(resp);
+                },
+                error: (error) => {
+                    console.log(error);
+                }
+            })
+        }
+
+        function loadServiceOptionOnly(locationId)
+        {
+            $.ajax({
+                url: "{{route('ajax.section.option.only')}}",
+                type: "GET",
+                data: {
+                    key: locationId
+                },
+                success: (resp) => {
+                    // console.log(resp);
+                    $(".loadedOptionSection").append(resp);
                 },
                 error: (error) => {
                     console.log(error);
@@ -238,6 +295,45 @@
                 success: (resp) => {
                     // console.log(resp);
                     $("#loadedUser").html(resp);
+                },
+                error: (error) => {
+                    console.log(error);
+                }
+            })
+        }
+
+
+        function loadTokenContent(tokenId)
+        {
+            $.ajax({
+                url: "{{route('ajax.load.token.info')}}",
+                type: "GET",
+                data: {
+                    tokenId: tokenId
+                },
+                success: (resp) => {
+
+                    let department = "";
+                    let section = "";
+                    var selected = "";
+
+                    for(key in resp.departments)
+                    {
+                        if(resp.departments[key] == resp.token.department_id)
+                        {
+                            selected = "selected";
+                        }
+                        else
+                        {
+                            selected = "";
+                        }
+
+                        department += `<option value="${key}" ${selected}>${resp.departments[key]}</option>`;
+                    }
+
+                    $(".loadDepartment").html(department);
+                    $(".loadSection").html(resp.sections);
+
                 },
                 error: (error) => {
                     console.log(error);

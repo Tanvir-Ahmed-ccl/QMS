@@ -99,27 +99,91 @@ class TokenBookingController extends Controller
         
         if(!$token->exists())
         {
-            $setting = TokenSetting::select('counter_id','section_id','department_id','user_id','created_at')
-                ->where('department_id', $request->department_id)
-                ->where('section_id', $request->section_id)
-                ->first();
+            // find auto-setting
+            $settings = TokenSetting::select('counter_id','section_id','department_id','user_id','created_at')
+                    ->where('department_id', $request->department_id)
+                    ->whereIn('section_id', $request->section_id)
+                    ->groupBy('user_id')
+                    ->get();
 
-            $saveToken = [
-                'company_id'    => $companyId,
-                'token_no'      => $this->newToken($request->date, $setting['department_id'], $setting['counter_id'], $companyId),
-                'client_mobile' => $request->client_mobile,
-                'department_id' => $setting->department_id,
-                'section_id'    => $setting->section_id ?? 0,
-                'counter_id'    => $setting->counter_id,
-                'user_id'       => $setting->user_id,
-                'note'          => $request->note, 
-                'note2'          => $request->note2, 
-                'created_by'    => 0,
-                'created_at'    => date('Y-m-d H:i:s', strtotime($request->date . ' ' . $request->time)), 
-                'updated_at'    => null,
-                'status'        => 0 
-            ]; 
+            if(!empty($settings))
+            {
+                foreach ($settings as $setting) {
+                    //compare each user in today
+                    $tokenData = Token::select('department_id','counter_id','section_id','user_id',DB::raw('COUNT(user_id) AS total_tokens'))
+                            ->where('department_id',$setting->department_id)
+                            ->where('counter_id',$setting->counter_id)
+                            ->where('user_id',$setting->user_id)
+                            ->where('status', 0)
+                            ->whereRaw('DATE(created_at) = CURDATE()')
+                            ->orderBy('total_tokens', 'asc')
+                            ->groupBy('user_id')
+                            ->first();
 
+                    //create user counter list
+                    $tokenAssignTo[] = [
+                        'total_tokens'  => (!empty($tokenData->total_tokens)?$tokenData->total_tokens:0),
+                        'department_id' => $setting->department_id,
+                        'section_id' => $setting->section_id,
+                        'counter_id'    => $setting->counter_id,
+                        'user_id'       => $setting->user_id
+                    ]; 
+                }
+
+                $min = min($tokenAssignTo);
+                $saveToken = [
+                    'company_id'    => $companyId,
+                    'token_no'      => $this->newToken($request->date, $min['department_id'], $min['counter_id'], $companyId),
+                    'client_mobile' => $request->client_mobile,
+                    'department_id' => $min['department_id'],
+                    'section_id'    => $min['section_id'],
+                    'services'      => json_encode($request->section_id),
+                    'counter_id'    => $min['counter_id'],
+                    'user_id'       => $min['user_id'],
+                    'note'          => $request->note, 
+                    'created_by'    => 0,
+                    'created_at'    => date('Y-m-d H:i:s', strtotime($request->date . ' ' . $request->time)), 
+                    'updated_at'    => null,
+                    'status'        => 0,
+                    'for_booking'   => 1
+                ];
+            }
+            else
+            {
+                $saveToken = [
+                    'company_id'    => $companyId,
+                    'token_no'      => $this->newToken($request->date, $request->department_id, $request->counter_id, $companyId),
+                    'client_mobile' => $request->client_mobile,
+                    'department_id' => $request->department_id,
+                    'section_id'    => $request->section_id ?? 0,
+                    'services'      => json_encode($request->section_id),
+                    'counter_id'    => $request->counter_id, 
+                    'user_id'       => $request->user_id, 
+                    'note'          => $request->note, 
+                    'created_at'    => date('Y-m-d H:i:s', strtotime($request->date . ' ' . $request->time)),
+                    'created_by'    => 0,
+                    'updated_at'    => null,
+                    'status'        => 0,
+                    'for_booking'   => 1,
+                ]; 
+            }
+
+            // $saveToken = [
+            //     'company_id'    => $companyId,
+            //     'token_no'      => $this->newToken($request->date, $setting['department_id'], $setting['counter_id'], $companyId),
+            //     'client_mobile' => $request->client_mobile,
+            //     'department_id' => $setting->department_id,
+            //     'section_id'    => $setting->section_id[0] ?? 0,
+            //     'services'      => json_encode($request->section_id),
+            //     'counter_id'    => $setting->counter_id,
+            //     'user_id'       => $setting->user_id,
+            //     'note'          => $request->note, 
+            //     'note2'         => $request->note2, 
+            //     'created_by'    => 0,
+            //     'created_at'    => date('Y-m-d H:i:s', strtotime($request->date . ' ' . $request->time)), 
+            //     'updated_at'    => null,
+            //     'status'        => 0 
+            // ]; 
 
         
             //store in database  
@@ -380,58 +444,89 @@ class TokenBookingController extends Controller
 
     public function sendReminder()
     {
-        $tokens = Token::whereDate('created_at', '>=', today())->get();
+        $initTime = microtime(true);
 
-        foreach($tokens as $token)
+        echo "Task Init Time: ".date('Y-m-d H:i:s')."<br/> =================================================== <br/><br/>";
+
+        $tokens = Token::where('status', 0)->where('for_booking', 1)->get();
+
+        $init = 0;
+        foreach($tokens as $key => $token)
         {
-            $diff_in_minutes = Carbon::createFromFormat('Y-m-d H:s:i', $token->created_at)->diffInMinutes(now());
+            @date_default_timezone_set(companyDetails($token->company_id)->timezone);
 
-            $app = Setting::where('company_id', $token->company_id)->first();
-            $beforeMinutes = $app->reminder_for_booking;
-
-            if($diff_in_minutes <= $beforeMinutes)
+            echo "Time Zone: ". companyDetails($token->company_id)->timezone . "<br/>";
+            echo "Present Time: " . now() . "<br/><br/>";
+            
+            $message = "MEssage Init";
+            $diff_in_minutes = 0;
+            $app = DB::table('addon_settings')->where('company_id', $token->company_id)->first();
+            $beforeMinutes = (is_null($app)) ? 0 : $app->before_time_alert;
+            
+            if($token->created_at > date("Y-m-d H:i:s"))
             {
-                $sendMsg = DB::table('reminders')->where('type', 'reminder')->where('target_table', 'tokens')->where('target_id'. $token->id);
+                $diff_in_minutes = Carbon::createFromFormat('Y-m-d H:i:s', $token->created_at)->diffInMinutes(now());
 
-                $message = "SMS Sended";
+                $message = "SMS Not send";
 
-                if(!$sendMsg->exists()):
+                if($diff_in_minutes < $beforeMinutes)
+                {
+                    $sendMsg = DB::table('reminders')->where('type', 'reminder')->where('target_table', 'tokens')->where('target_id', $token->id);
 
-                    $response = sendSMSByTwilioForBookingReminder($token->client_mobile, [
-                                    'datetime'  =>  date("Y-m-d H:i:s", strtotime($token->created_at)),
-                                    'companyName'   =>  $app->title,
-                                    'location'      =>  $token->department->name
-                                ]);
+                    $message = "SMS Sended";
 
-                    $sms = new SmsHistory;
-                    $sms->company_id  = $token->companyId;
-                    $sms->from        = AppSettings::first()->TW_FROM;
-                    $sms->to          = $token->client_mobile;
-                    $sms->message     = "Send Reminder for booked appointment";
-                    $sms->response    = $response;
-                    $sms->created_at  = date('Y-m-d H:i:s');
-                    $sms->save();
+                    if(!$sendMsg->exists()):
 
-                    DB::table('reminders')->insert([
-                        'type'  => 'reminder',
-                        'created_at'    =>  date('Y-m-d H:i:s'),
-                        'updated_at'    =>  date('Y-m-d H:i:s'),
-                        'target_table'  =>  'tokens',
-                        'target_id'  =>  $token->id,
-                    ]);
+                        $response = sendSMSByTwilioForBookingReminder($token->client_mobile, [
+                                        'datetime'  =>  date("Y-m-d H:i:s", strtotime($token->created_at)),
+                                        'companyName'   =>  companyDetails($token->company_id)->title,
+                                        'location'      =>  $token->department->name
+                                    ]);
 
-                    $message = $sms->message;
-                endif;
+                        $sms = new SmsHistory;
+                        $sms->company_id  = $token->company_id;
+                        $sms->from        = AppSettings::first()->TW_FROM;
+                        $sms->to          = $token->client_mobile;
+                        $sms->message     = "Send Reminder for booked appointment";
+                        $sms->response    = json_encode($response);
+                        $sms->created_at  = date('Y-m-d H:i:s');
+                        $sms->save();
+
+                        DB::table('reminders')->insert([
+                            'type'  => 'reminder',
+                            'created_at'    =>  date('Y-m-d H:i:s'),
+                            'updated_at'    =>  date('Y-m-d H:i:s'),
+                            'target_table'  =>  'tokens',
+                            'target_id'  =>  $token->id,
+                            'response'  =>  json_encode($response),
+                        ]);
+
+                        ++$init;
+                        $message = $sms->message;
+                    endif;
+                }
+            }
+            else
+            {
+                echo '<h4>Not Validate</h4>';
             }
 
             echo "Token No: {$token->token_no} <br/>";
             echo "Client Mobile: {$token->client_mobile} <br/>";
+            echo "Client Name: {$token->note} <br/>";
             echo "Date: {$token->created_at} <br/>";
+            echo "Time Diff: {$diff_in_minutes} Minutes <br/>";
+            echo "BeforeSend in App Settings: {$beforeMinutes} Minutes <br/>";
             echo "Message: $message <br/>";
-            echo "==================================================== <br/>";
+            echo "==================================================== <br/><br/><br/>";
         }
 
 
-        return "Cron Job Running successfully";
+        echo "Token Found: ". $tokens->count() . "<br/>";
+        echo "Reminder Send: ". $init . "<br/>";
+        echo "Task Closing <br/>";
+
+        $endTime = microtime(true);
+        return "Execution Time: " . $execution_time = ($endTime - $initTime) . " Seconds";
     }
 }

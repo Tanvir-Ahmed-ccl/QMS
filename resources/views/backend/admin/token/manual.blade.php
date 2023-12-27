@@ -72,9 +72,9 @@
             </div> 
 
             {{-- service --}}
-            <div class="form-group @error('section_id') has-error @enderror" id="ajax-section">
+            <div class="form-group @error('section_id') has-error @enderror">
                 <label for="section_id">Service <i class="text-danger">*</i></label><br/>
-                <select name="section_id" class="form-control">
+                <select name="section_id" class="form-control" id="ajax-section">
                     <option value="">Select One</option>
                 </select>
             </div> 
@@ -122,9 +122,6 @@
             </div>
             {{ Form::close() }}
             </div>
-
-      
-        
     </div> 
 </div>  
 
@@ -243,7 +240,7 @@
     function loadSection(key)
     {
         $.ajax({
-            url:"{{route('ajax.load.section')}}",
+            url:"{{route('ajax.section.option.only')}}",
             type: "GET",
             data:{
                 key:key

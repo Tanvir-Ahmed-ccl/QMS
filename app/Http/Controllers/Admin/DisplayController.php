@@ -23,7 +23,7 @@ class DisplayController extends Controller
 
         if (empty($setting)) 
         {
-            $insert = DisplaySetting::insert([
+            $setting = DisplaySetting::create([
                 'company_id'   =>  auth()->user()->company_id,
                 'message'      => "Token - Queue Management System",
                 'color'        => "#3c8dbc",

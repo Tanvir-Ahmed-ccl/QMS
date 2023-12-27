@@ -16,6 +16,18 @@
 
         {{ Form::open(['url' => 'admin/counter/create', 'class'=>'col-md-7 col-sm-8']) }}
      
+            
+            <div class="form-group @error('department') has-error @enderror">
+                <label for="name">Select Location <i class="text-danger">*</i></label>
+                <select name="department" class="form-select" required>
+                    <option value="" selected>Select Option</option>
+                    @foreach ($department as $key => $item)
+                        <option value="{{$key}}"  {{ ($key == old('department')) ? 'selected' : '' }}>{{$item}}</option>
+                    @endforeach
+                </select>
+                <span class="text-danger">{{ $errors->first('department') }}</span>
+            </div>
+
             <div class="form-group @error('name') has-error @enderror">
                 <label for="name">{{ trans('app.name') }} <i class="text-danger">*</i></label>
                 <input type="text" name="name" id="name" class="form-control" placeholder="{{ trans('app.name') }}" value="{{ old('name') }}">

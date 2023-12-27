@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Login | Gokiiw</title>
+    <title>Login | {{env("APP_NAME")}}</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-gH2yIJqKdNHPEq0n4Mqa/HGKIhSkIHeL5AyhkYV8i59U5AR6csBvApHHNl/vI1Bx" crossorigin="anonymous">
   
   
@@ -41,7 +41,7 @@
               <div class="col-md-8 p-4">
 
                 <h1>Log In</h1>
-                <h5>Don't have an account? <a href="{{ route('signup') }}" class="text-dark">Sign up here</a></h5>
+                {{-- <h5>Don't have an account? <a href="{{ route('signup') }}" class="text-dark">Sign up here</a></h5> --}}
 
                 @if (isset($msg) && isset($email))
                 <div class="row">
@@ -142,13 +142,9 @@
         <div class="col-lg-4 bg-white d-lg-block d-none">
             <div class="row min-vh-100 align-items-center p-3">
                 <div class="col">
-                  <h4>Hi I am John</h4>
-                  <h6>I will be your personal guide to {{ env('APP_NAME') }}.</h6>
-
-                  <img src="{{ asset('d/icon-526.png') }}" alt="" class="rounded-circle" width="200">
-                
-                  <h3 class="text-primary">John Doe</h3>
-                  <h6>Head of Customer <br> Success at {{ env('APP_NAME') }}</h6>
+                  <h4>Welcome to {{env('APP_NAME')}} system</h4>
+                 
+                  <img src="{{ asset('d/qms-icon.jpg') }}" alt="" class="rounded-circle" width="200">
                 </div>
             </div>
         </div>

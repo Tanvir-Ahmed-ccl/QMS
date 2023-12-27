@@ -51,11 +51,11 @@
                 <span class="text-danger">{{ $errors->first('user_type') }}</span>
             </div>
 
-            {{-- <div class="form-group @error('department_id') has-error @enderror" id="user_department">
+            <div class="form-group @error('department_id') has-error @enderror" id="user_department">
                 <label for="department_id">{{ trans('app.department') }} <i class="text-danger">*</i></label> 
                 {{ Form::select('department_id', $departmentList, null, ['placeholder' => trans('app.select_option'), 'class'=>'select2 form-control']) }}<br/>
                 <span class="text-danger">{{ $errors->first('department_id') }}</span>
-            </div>  --}}
+            </div> 
 
             <div class="form-group @error('mobile') has-error @enderror">
                 <label for="mobile">{{ trans('app.mobile') }} <i class="text-danger">*</i></label> 

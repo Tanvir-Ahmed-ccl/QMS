@@ -1,12 +1,18 @@
 <?php
 
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Http;
 
 function getCompanyDetails(string $userId)
 {
     $user = \App\Models\User::find($userId);
 
     $company = \App\Models\User::find($user->company_id);
+
+    if($user->company_id == 0)
+    {
+        return $user;
+    }
 
     return $company;
 }
@@ -57,6 +63,11 @@ function companyOwner(string $userId)
 
     $company = \App\Models\User::find($user->company_id);
 
+    if($user->conpany_id == 0)
+    {
+        return $user;
+    }
+
     return $company;
 }
 
@@ -79,15 +90,64 @@ function UserRoles()
 function sendSMSByTwilio($receiverNumber, $otp)
 {
     try{
-        $message = "Security code for Gokiiw is " . $otp;
+        // $message = "Security code is " . $otp;
+        
+        $phoneNumberId = env("WHATSAPP_BUSINESS_PHONE_NUMBER_ID");
+        $AccessToken = env("WHATSAPP_BUSINESS_ACCESS_TOKEN");
 
-        $twilio = \App\Models\AppSettings::first();
-        $account_sid = $twilio->TW_SID;
-        $auth_token = $twilio->TW_TOKEN;
-        $twilio_number = $twilio->TW_FROM;
+        $headers = [
+            "Authorization" => "Bearer {$AccessToken}",
+            "Accept" => "application/json"
+        ];
 
-        $client = new \Twilio\Rest\Client($account_sid, $auth_token);
-        $response = $client->messages->create($receiverNumber, ['from' => $twilio_number, 'body' => $message]);
+        $body = [
+            "messaging_product" => "whatsapp",
+            "recipient_type" => "individual",
+            "to" => "$receiverNumber",
+            "type" => "template", 
+            "template" => [
+                "name" => "verification_code",
+                "language" => [
+                    "code" => "en"
+                ],
+                "components" => [
+                    [
+                        "type"=> "body",
+                        "parameters" => [
+                            [
+                                "type" => "text",
+                                "text" => "$otp"
+                            ]
+                        ]
+                    ],
+                    [
+                        "type" => "button",
+                        "sub_type" => "url",
+                        "index" => "0",
+                        "parameters" => [
+                            [
+                                "type" => "text",
+                                "text" => "$otp"
+                            ]
+                        ]
+                    ]
+                ]
+            ]
+        ];
+
+        $resp = Http::withoutVerifying()
+        ->withHeaders($headers)
+        ->post("https://graph.facebook.com/v18.0/{$phoneNumberId}/messages", $body);
+
+        $response = true;
+
+        // $twilio = \App\Models\AppSettings::first();
+        // $account_sid = $twilio->TW_SID;
+        // $auth_token = $twilio->TW_TOKEN;
+        // $twilio_number = $twilio->TW_FROM;
+
+        // $client = new \Twilio\Rest\Client($account_sid, $auth_token);
+        // $response = $client->messages->create($receiverNumber, ['from' => $twilio_number, 'body' => $message]);
 
     }catch(\Exception $e){
         $response = $e->getMessage();
@@ -101,13 +161,51 @@ function sendSMSByTwilioForBookingReminder($receiverNumber, array $data=[])
     try{
         $message = "You have an appointment at {$data['datetime']} in {$data['companyName']}, {$data['location']}";
 
-        $twilio = \App\Models\AppSettings::first();
-        $account_sid = $twilio->TW_SID;
-        $auth_token = $twilio->TW_TOKEN;
-        $twilio_number = $twilio->TW_FROM;
+        $phoneNumberId = env("WHATSAPP_BUSINESS_PHONE_NUMBER_ID");
+        $AccessToken = env("WHATSAPP_BUSINESS_ACCESS_TOKEN");
 
-        $client = new \Twilio\Rest\Client($account_sid, $auth_token);
-        $response = $client->messages->create($receiverNumber, ['from' => $twilio_number, 'body' => $message]);
+        $headers = [
+            "Authorization" => "Bearer {$AccessToken}",
+            "Accept" => "application/json"
+        ];
+
+        $body = [
+            "messaging_product" => "whatsapp",
+            "recipient_type" => "individual",
+            "to" => "$receiverNumber",
+            "type" => "template", 
+            "template" => [
+                "name" => "appointment",
+                "language" => [
+                    "code" => "en"
+                ],
+                "components" => [
+                    [
+                        "type"=> "body",
+                        "parameters" => [
+                            [
+                                "type" => "text",
+                                "text" => "$message"
+                            ]
+                        ]
+                    ]
+                ]
+            ]
+        ];
+
+        Http::withoutVerifying()
+        ->withHeaders($headers)
+        ->post("https://graph.facebook.com/v18.0/{$phoneNumberId}/messages", $body);
+
+        $response = true;
+
+        // $twilio = \App\Models\AppSettings::first();
+        // $account_sid = $twilio->TW_SID;
+        // $auth_token = $twilio->TW_TOKEN;
+        // $twilio_number = $twilio->TW_FROM;
+
+        // $client = new \Twilio\Rest\Client($account_sid, $auth_token);
+        // $response = $client->messages->create($receiverNumber, ['from' => $twilio_number, 'body' => $message]);
 
     }catch(\Exception $e){
         $response = $e->getMessage();
@@ -122,13 +220,40 @@ function sendSMSByTwilioForSerial($receiverNumber = "01533448761", $message = "G
     try{
         // $message = "Security code for Gokiiw is " . $otp;
 
-        $twilio = \App\Models\AppSettings::first();
-        $account_sid = $twilio->TW_SID;
-        $auth_token = $twilio->TW_TOKEN;
-        $twilio_number = $twilio->TW_FROM;
+        // $twilio = \App\Models\AppSettings::first();
+        // $account_sid = $twilio->TW_SID;
+        // $auth_token = $twilio->TW_TOKEN;
+        // $twilio_number = $twilio->TW_FROM;
 
-        $client = new \Twilio\Rest\Client($account_sid, $auth_token);
-        $response = $client->messages->create($receiverNumber, ['from' => $twilio_number, 'body' => $message]);
+        // $client = new \Twilio\Rest\Client($account_sid, $auth_token);
+        // $response = $client->messages->create($receiverNumber, ['from' => $twilio_number, 'body' => $message]);
+
+        $phoneNumberId = env("WHATSAPP_BUSINESS_PHONE_NUMBER_ID");
+        $AccessToken = env("WHATSAPP_BUSINESS_ACCESS_TOKEN");
+
+        $headers = [
+            "Authorization" => "Bearer {$AccessToken}",
+            "Accept" => "application/json"
+        ];
+
+        $body = [
+            "messaging_product" => "whatsapp",
+            "recipient_type" => "individual",
+            "to" => "$receiverNumber",
+            "type" => "template", 
+            "template" => [
+                "name" => "next_turn",
+                "language" => [
+                    "code" => "en"
+                ]
+            ]
+        ];
+
+        $resp = Http::withoutVerifying()
+        ->withHeaders($headers)
+        ->post("https://graph.facebook.com/v18.0/{$phoneNumberId}/messages", $body);
+
+        $response = true;
 
     }catch(\Exception $e){
         $response = $e->getMessage();

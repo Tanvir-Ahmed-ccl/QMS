@@ -96,10 +96,10 @@ class LoginController extends Controller
                 try{
                     Mail::to($authUser->email)->send(new OtpEmail(['otp'=>$otp]));
 
-                    if(!is_null($phone)){
-                        //Send otp in mobile
-                        sendSMSByTwilio($phone, $otp);
-                    }
+                    // if(!is_null($phone)){
+                    //     //Send otp in mobile
+                    //     sendSMSByTwilio($phone, $otp);
+                    // }
                 }catch(Exception $e){                    
                     $msg = 'Exception Message: '. $e->getMessage();
                 }
@@ -161,6 +161,8 @@ class LoginController extends Controller
                         // 'display'  => !empty($display->display)?$display->display:2, 
                         'copyright_text' => $app->copyright_text, 
                     )); 
+
+                    Session::put("locale", "es");
                 }
             }
             catch(Exception $e)

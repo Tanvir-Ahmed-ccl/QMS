@@ -69,7 +69,7 @@ class DisplayController extends Controller
         $newToken   = [];
         $setting  = DisplaySetting::where('company_id', auth()->user()->company_id)->first(); 
         $appSetting = Setting::where('company_id', auth()->user()->company_id)->first();
-        date_default_timezone_set(session('app.timezone')?session('app.timezone'):$appSetting->timezone);
+        date_default_timezone_set($appSetting->timezone);
 
         $displays = DB::select("
             SELECT 
@@ -82,7 +82,8 @@ class DisplayController extends Controller
             FROM (
                     SELECT t.* 
                     FROM token t 
-                    WHERE t.status = 0 AND t.company_id = $company_id AND t.is_serving = 1
+                    WHERE t.status = 0 AND t.company_id = $company_id
+                    AND  CAST(t.created_at AS DATE) = '".date("Y-m-d")."'
                     ORDER BY t.is_vip DESC, t.id ASC 
                     LIMIT 8
                 ) AS token
@@ -92,7 +93,6 @@ class DisplayController extends Controller
                 counter ON counter.id = token.counter_id
             LEFT JOIN 
                 user ON user.id = token.user_id       
-            WHERE CAST(token.created_at AS DATE) = '".date("Y-m-d")."'
             ORDER BY token.is_vip DESC, token.id ASC
         ");
 
@@ -293,6 +293,7 @@ class DisplayController extends Controller
                             WHERE 
                                 t.status = 0 
                                 AND t.counter_id = $counter->id
+                                AND  CAST(t.created_at AS DATE) = '".date("Y-m-d")."'
                             ORDER BY t.id ASC 
                             LIMIT 5
                         ) AS token
@@ -305,7 +306,6 @@ class DisplayController extends Controller
                     LEFT JOIN 
                         user ON user.id = token.user_id
                     WHERE token.company_id = $company_id
-                    AND  CAST(token.created_at AS DATE) = '".date("Y-m-d")."'
                     ORDER BY token.is_vip ASC, token.id DESC
                     LIMIT 5
                 ");
@@ -467,7 +467,7 @@ class DisplayController extends Controller
 
         $setting = DisplaySetting::where('company_id', auth()->user()->company_id)->first(); 
         $appSetting = Setting::where('company_id', auth()->user()->company_id)->first();   
-        date_default_timezone_set(session('app.timezone')?session('app.timezone'):$appSetting->timezone);
+        date_default_timezone_set($appSetting->timezone);
         $departments = DB::table('department')
             ->where('company_id', auth()->user()->company_id)
             ->where('status', 1)
@@ -482,6 +482,7 @@ class DisplayController extends Controller
                     token.token_no AS token,
                     token.client_mobile AS mobile,
                     token.note AS note,
+                    token.created_at,
                     token.updated_at,
                     department.name AS department,
                     sections.name AS section,
@@ -493,6 +494,7 @@ class DisplayController extends Controller
                         WHERE 
                             t.status = 0 
                             AND t.department_id = $department->id
+                            AND  CAST(t.created_at AS DATE) = '".date("Y-m-d")."'
                         ORDER BY t.id ASC 
                         LIMIT 5
                     ) AS token
@@ -505,7 +507,6 @@ class DisplayController extends Controller
                 LEFT JOIN 
                     user ON user.id = token.user_id
                 WHERE token.company_id = $company_id
-                AND  CAST(token.created_at AS DATE) = '".date("Y-m-d")."'
                 ORDER BY token.is_vip ASC, token.id DESC
                 LIMIT 5
             ");
@@ -874,6 +875,7 @@ class DisplayController extends Controller
                     SELECT t.* 
                     FROM token t 
                     WHERE t.status = 0 AND t.company_id = $company_id AND t.department_id = $locationId
+                    AND  CAST(t.created_at AS DATE) = '".date("Y-m-d")."'
                     ORDER BY t.is_vip DESC, t.id ASC 
                     LIMIT 8
                 ) AS token
@@ -883,7 +885,6 @@ class DisplayController extends Controller
                 counter ON counter.id = token.counter_id
             LEFT JOIN 
                 user ON user.id = token.user_id      
-            WHERE  CAST(token.created_at AS DATE) = '".date("Y-m-d")."'  
             ORDER BY token.is_vip DESC, token.id ASC
         ");
 

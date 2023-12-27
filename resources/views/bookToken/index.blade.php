@@ -9,7 +9,7 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/assets/owl.carousel.min.css" />
 
-    <title>Gokiiw</title>
+    <title>{{env("APP_NAME")}}</title>
 
     <link rel="stylesheet" href="{{ asset('intelInput/style.css') }}">
     <style>
@@ -19,8 +19,9 @@
     </style>
   </head>
   <body>
-    <div class="container py-5 my-3">
+    <div class="container-md">
         <div class="row align-items-center">
+            
             <div class="col-12">
               <div class="card shadow">
                 <div class="card-header text-center bg-primary text-light">
@@ -43,8 +44,24 @@
 
                 <div class="card-body" style="min-height: 60vh">
                   <div class="row my-3">
+                    
+
+                    <div class="col-12 text-center">
+                      <div class="owl-carousel owl-theme">
+                          @forelse (\App\Ads::selfData($setting->company_id) as $item)
+                              <div class="item">
+                                  <a href="{{$item->link}}" target="_blank">
+                                      <img src="{{asset($item->images)}}" alt="banner" class="img-fluid" style="height: 100px; width: 100%; margin: auto auto">
+                                  </a>
+                              </div>
+                          @empty
+                              
+                          @endforelse
+                      </div>
+                    </div>
+
                     @foreach ($data as $key => $item)
-                      <div class="col-md">
+                      <div class="col-md mb-3">
                           <form action="{{route('book.token.auth')}}" method="POST">
                             @csrf
                             <input type="hidden" name="department_id" value="{{$item['location']['department_id']}}">
@@ -60,18 +77,10 @@
                       </div>
                     @endforeach
 
-                    <div class="col-12 mt-5 text-center">
-                      <div class="owl-carousel owl-theme">
-                          @forelse (\App\Ads::selfData($setting->company_id) as $item)
-                              <div class="item">
-                                  <a href="{{$item->link}}" target="_blank">
-                                      <img src="{{asset($item->images)}}" alt="banner" class="img-fluid" style="height: 300px; width: 800px; margin: auto auto">
-                                  </a>
-                              </div>
-                          @empty
-                              
-                          @endforelse
-                      </div>
+                    <div class="col-12 my-3 bg-dark" style="color: red">
+                        @if (!is_null($setting->announcement))
+                            <h2><marquee direction="rtl">{{ $setting->announcement }}</marquee></h2>
+                        @endif
                     </div>
 
 
