@@ -110,10 +110,10 @@
 
             <input name="client_mobile" type="hidden" id="success_mobile" class="form-control">
             
-            {{-- <div class="form-group mb-3">
+            <div class="form-group mb-3">
                 Mobile Number <span class="text-danger">*</span>(<span class="text-info">Ex: {{companyDetails($company->company_id)->example_phone}}</span>)
                 <input name="client_mobile" type="tel" id="mobile" class="form-control" value="{{$setting->country_code}}" placeholder="{{ trans('app.client_mobile') }}" required>
-            </div> --}}
+            </div>
             
             <p >
                 <label for="">Services</label>
